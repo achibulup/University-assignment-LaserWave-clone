@@ -38,8 +38,10 @@ class PlayingState : public State
     void randomlySpawnEnemy();
     void filterOffScreenEnemies();
     void gameOver();
-    void pauseGame();
     void processInput(sf::Time dt, EventManager &event);
+    void requestPause();
+    void requestRestart();
+    void requestMenu();
     float getEnemySpawnProbability();
     sf::Vector2f getRandomSpawnPosition() const;
     void spawnEnemy();

@@ -31,33 +31,38 @@ std::vector<StackRequest> PlayingState::update(sf::Time dt, EventManager &event)
 {
     if (this->m_state == GameState::PAUSED) return {};
 
-    this->m_clock.add1Tick();
-    this->m_enemy_spawn_timer += dt;
-    this->m_sound_timer += dt;
-    this->m_player.update(dt);
-    this->m_enemies.update(dt);
-    this->m_particles.update(dt);
+    if (this->m_state == GameState::PLAYING) {
+      this->m_clock.add1Tick();
+      this->m_enemy_spawn_timer += dt;
+      this->m_sound_timer += dt;
+      this->m_player.update(dt);
+      this->m_enemies.update(dt);
+      this->m_particles.update(dt);
 
-    this->randomlySpawnEnemy();
-    this->filterOffScreenEnemies();
+      this->randomlySpawnEnemy();
+      this->filterOffScreenEnemies();
 
-    {
-      for (auto &enemy : this->m_enemies) {
-        if (isColliding(this->m_player, enemy))
-          this->playerGetHit(normalize(this->m_player.getCenter() - enemy.getCenter())); 
+      {
+        for (auto &enemy : this->m_enemies) {
+          if (isColliding(this->m_player, enemy))
+            this->playerGetHit(normalize(this->m_player.getCenter() - enemy.getCenter())); 
+        }
+      
+        auto direction = this->checkPlayerTouchEdge();
+        if (direction != sf::Vector2f(0, 0)) 
+          this->playerGetHit(direction);
       }
-    
-      auto direction = this->checkPlayerTouchEdge();
-      if (direction != sf::Vector2f(0, 0)) 
-        this->playerGetHit(direction);
-    }
 
-    this->m_health_bar.setHealth(this->m_player.health());
-    if (!this->m_player.isAlive()) {
-      this->gameOver();
-      return std::move(this->m_requests);
+      this->m_health_bar.setHealth(this->m_player.health());
+      if (!this->m_player.isAlive()) {
+        this->m_state = GameState::OVER;
+      }
     }
-
+    else if (this->m_state == GameState::OVER) {
+      this->m_enemies.update(dt);
+      this->m_particles.update(dt);
+      this->filterOffScreenEnemies();
+    }
     this->processInput(dt, event);
     return std::move(this->m_requests);
 }
@@ -67,7 +72,8 @@ void PlayingState::render() const
     auto &target = this->getWindow();
     target.clear(BACKGROUND_COLOR);
     this->m_enemies.drawTo(target);
-    target.draw(this->m_player);
+    if (this->m_player.isAlive())
+      target.draw(this->m_player);
     this->m_particles.drawTo(target);
     target.draw(this->m_clock);
     target.draw(this->m_health_bar);
@@ -88,36 +94,61 @@ void PlayingState::asTopState()
 void PlayingState::processInput(sf::Time dt, EventManager &event)
 {
     auto &&events = event.getPendingEvents();
-    for (const auto &e : events) {
-      if (e.type == sf::Event::MouseButtonPressed) {
-        auto click = e.mouseButton;
-        if (click.button == sf::Mouse::Left) {
-          sf::Vector2f direction = {click.x - m_player.getCenter().x,
-                                    click.y - m_player.getCenter().y};
-          direction = normalize(direction);
-          playerShoot(direction);
+    if (this->m_state == GameState::PLAYING) {
+      for (const auto &e : events) {
+        if (e.type == sf::Event::MouseButtonPressed) {
+          auto click = e.mouseButton;
+          if (click.button == sf::Mouse::Left) {
+            sf::Vector2f direction = {click.x - m_player.getCenter().x,
+                                      click.y - m_player.getCenter().y};
+            direction = normalize(direction);
+            playerShoot(direction);
+          }
+          if (click.button == sf::Mouse::Right) {
+            sf::Vector2f direction = {click.x - m_player.getCenter().x,
+                                      click.y - m_player.getCenter().y};
+            direction = normalize(direction);
+            playerKick(direction);
+          }
         }
-        if (click.button == sf::Mouse::Right) {
-          sf::Vector2f direction = {click.x - m_player.getCenter().x,
-                                    click.y - m_player.getCenter().y};
-          direction = normalize(direction);
-          playerKick(direction);
+        if (e.type == sf::Event::KeyPressed) {
+          if (e.key.code == sf::Keyboard::P)
+            this->requestPause();
+        }
+        if (e.type == sf::Event::LostFocus) {
+          this->requestPause();
         }
       }
-      if (e.type == sf::Event::KeyPressed) {
-        if (e.key.code == sf::Keyboard::P)
-          this->pauseGame();
-      }
-      if (e.type == sf::Event::LostFocus) {
-        this->pauseGame();
+    }
+    else if (this->m_state == GameState::OVER) {for (const auto &e : events) {
+        if (e.type == sf::Event::MouseButtonPressed) {
+          auto click = e.mouseButton;
+          if (click.button == sf::Mouse::Left) {
+            this->requestRestart();
+          }
+          if (click.button == sf::Mouse::Right) {
+            this->requestMenu();
+          }
+        }
       }
     }
 }
 
-void PlayingState::pauseGame()
+void PlayingState::requestPause()
 {
     this->m_state = GameState::PAUSED;
     this->m_requests.push_back({StackRequest::PUSH, PauseState::ID});
+}
+
+void PlayingState::requestRestart()
+{
+    this->m_requests.push_back(StackRequest::POP);
+    this->m_requests.push_back({StackRequest::PUSH, PlayingState::ID});
+}
+
+void PlayingState::requestMenu()
+{
+    this->m_requests.push_back(StackRequest::POP);
 }
 
 void PlayingState::filterOffScreenEnemies()
