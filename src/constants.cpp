@@ -55,7 +55,7 @@ const float PLAYER_SPEED = 320.f;
 const float PLAYER_HIT_SPEED = 200.f;
 const float PLAYER_SHOOT_SPEED = 110.f;
 const float PLAYER_MIN_DRAG = 120.f;
-const float PLAYER_MAX_FALL = 200.f;
+const float PLAYER_MAX_FALL = 170.f;
 const int PLAYER_MAX_HEALTH = 5;
 const float PLAYER_INVINCIBILITY_DURATION = 1.f;
 
