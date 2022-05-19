@@ -86,6 +86,11 @@ extern const float BASIC_ENEMY_SPEED;
 extern const Angle BASIC_ENEMY_MAX_ROTATION_SPEED;
 extern const Angle BASIC_ENEMY_MIN_ROTATION_SPEED;
 
+extern const sf::String PAUSE_TITLE;
+extern const int PAUSE_TITLE_FONT_SIZE;
+extern const float PAUSE_TITLE_Y;
+extern const sf::Color PAUSE_TITLE_COLOR;
+
 } // namespace Constants
 
 } // namespace LaserWave

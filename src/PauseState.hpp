@@ -26,6 +26,7 @@ class PauseState : public State
     const sf::Cursor *m_cursor;
     SimpleGUI m_GUI;
     std::vector<StackRequest> m_requests;
+    sf::Text m_pause_text;
 };
 
 

@@ -7,8 +7,15 @@ namespace LaserWave
 {
 
 PauseState::PauseState(GameDataRef data)
-: State(data), m_cursor(&this->getAssets().getCursor(DEFAULT_CURSOR)) 
+: State(data), m_cursor(&this->getAssets().getCursor(DEFAULT_CURSOR)),
+  m_pause_text(PAUSE_TITLE, this->getAssets().getFont(PAUSE_FONT),
+               PAUSE_TITLE_FONT_SIZE)
 {
+    m_pause_text.setPosition({this->getWindow().getSize().x / 2 
+                           -  m_pause_text.getGlobalBounds().width / 2,
+                              PAUSE_TITLE_Y});
+    m_pause_text.setColor(PAUSE_TITLE_COLOR);
+
     const sf::Texture *resume_texture = &this->getAssets().getTexture(RESUME_BUTTON);
     const sf::Texture *restart_texture = &this->getAssets().getTexture(RESTART_BUTTON);
     const sf::Texture *menu_texture = &this->getAssets().getTexture(MENU_BUTTON);
@@ -69,6 +76,7 @@ void PauseState::render() const
     rect.setFillColor(PAUSE_FILTER);
     this->getWindow().draw(rect);
 
+    this->getWindow().draw(m_pause_text);
     this->m_GUI.drawTo(this->getWindow());
 }
 

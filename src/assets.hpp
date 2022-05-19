@@ -20,6 +20,7 @@ extern const std::string SHOOT_SOUND;
 extern const std::string KICK_SOUND;
 extern const std::string HIT_SOUND;
 extern const std::string EXIT_BUTTON;
+extern const std::string PAUSE_FONT;
 extern const std::string RESUME_BUTTON;
 extern const std::string RESTART_BUTTON;
 extern const std::string MENU_BUTTON;

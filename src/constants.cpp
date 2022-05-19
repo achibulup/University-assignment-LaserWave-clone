@@ -80,6 +80,11 @@ const float BASIC_ENEMY_SPEED = 150.f;
 const Angle BASIC_ENEMY_MAX_ROTATION_SPEED = Angle::fromDegrees(30.f);
 const Angle BASIC_ENEMY_MIN_ROTATION_SPEED = Angle::fromDegrees(5.f);
 
+const sf::String PAUSE_TITLE = "PAUSED";
+const int PAUSE_TITLE_FONT_SIZE = 90;
+const float PAUSE_TITLE_Y = 45.f;
+const sf::Color PAUSE_TITLE_COLOR = sf::Color(77, 35, 113);
+
 } // namespace Constants
 
 } // namespace LaserWave

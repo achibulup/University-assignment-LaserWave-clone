@@ -17,6 +17,7 @@ const std::string SHOOT_SOUND = "SHOOT-SOUND";
 const std::string KICK_SOUND = "KICK-SOUND";
 const std::string HIT_SOUND = "HIT-SOUND";
 const std::string EXIT_BUTTON = "EXIT-BUTTON";
+const std::string PAUSE_FONT = "PAUSE-FONT";
 const std::string RESUME_BUTTON = "RESUME-BUTTON";
 const std::string RESTART_BUTTON = "RESTART-BUTTON";
 const std::string MENU_BUTTON = "MENU-BUTTON";
@@ -37,6 +38,7 @@ void loadAssets(AssetManager &asset)
     asset.loadFont(GAMECLOCK_FONT, "assets/fonts/Zealot.ttf");
     asset.loadFont(TITLE_FONT, "assets/fonts/SportypoReguler.ttf");
     asset.loadFont(CLICK_FONT, "assets/fonts/Cyberjunkies.ttf");
+    asset.loadFont(PAUSE_FONT, "assets/fonts/PilotCommand.otf");
     asset.loadSound(KICK_SOUND, "assets/sounds/bigbassfoot-kick.wav");
     asset.loadSound(SHOOT_SOUND, "assets/sounds/lotruesn.wav");
     asset.loadSound(HIT_SOUND, "assets/sounds/Tom7.wav");
