@@ -162,21 +162,6 @@ void PlayingState::processInput(sf::Time dt, EventManager &event)
     auto &&events = event.getPendingEvents();
     if (this->m_state == GameState::PLAYING) {
       for (const auto &e : events) {
-        // if (e.type == sf::Event::MouseButtonPressed) {
-        //   auto click = e.mouseButton;
-        //   if (click.button == sf::Mouse::Left) {
-        //     sf::Vector2f direction = {click.x - m_player.getCenter().x,
-        //                               click.y - m_player.getCenter().y};
-        //     direction = normalize(direction);
-        //     playerShoot(direction);
-        //   }
-        //   if (click.button == sf::Mouse::Right) {
-        //     sf::Vector2f direction = {click.x - m_player.getCenter().x,
-        //                               click.y - m_player.getCenter().y};
-        //     direction = normalize(direction);
-        //     playerKick(direction);
-        //   }
-        // }
         if (e.type == sf::Event::KeyPressed) {
           if (e.key.code == sf::Keyboard::P 
            || e.key.code == sf::Keyboard::Escape)
@@ -246,8 +231,8 @@ void PlayingState::gameOver()
 
 float PlayingState::getEnemySpawnProbability()
 {
-    float sin_time = sin(this->m_enemy_spawn_timer.asSeconds());
-    return 0.005 + 0.045 * std::pow(sqr(sin_time), 3);
+    float sin_time = sin(this->m_enemy_spawn_timer.asSeconds() * 1.8);
+    return 0.002 + 0.05 * std::pow(sqr(sin_time), 3);
 }
 
 void PlayingState::spawnEnemy()
