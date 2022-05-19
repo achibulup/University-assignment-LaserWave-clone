@@ -61,7 +61,8 @@ PauseState::~PauseState() = default;
 std::vector<StackRequest> PauseState::update(sf::Time dt, EventManager &event)
 {
     if (this->m_GUI.respondToEvent(event)) {}
-    else if (event.isKeyPressed(sf::Keyboard::P)) {
+    else if (event.isKeyPressed(sf::Keyboard::P) 
+          || event.isKeyPressed(sf::Keyboard::Escape)) {
       this->m_requests.push_back(StackRequest::POP);
     }
     return std::move(this->m_requests);

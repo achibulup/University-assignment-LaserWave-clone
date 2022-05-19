@@ -91,6 +91,16 @@ extern const int PAUSE_TITLE_FONT_SIZE;
 extern const float PAUSE_TITLE_Y;
 extern const sf::Color PAUSE_TITLE_COLOR;
 
+extern const sf::Color GAMEOVER_COLOR;
+extern const sf::String GAMEOVER_TEXT;
+extern const int GAMEOVER_FONT_SIZE;
+extern const float GAMEOVER_Y;
+extern const int GAMEOVER_SUBTITLE_FONT_SIZE;
+extern const sf::String GAMEOVER_SUBTITLE1;
+extern const sf::String GAMEOVER_SUBTITLE2;
+extern const float GAMEOVER_SUBTITLE1_Y;
+extern const float GAMEOVER_SUBTITLE2_Y;
+
 } // namespace Constants
 
 } // namespace LaserWave

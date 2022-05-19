@@ -21,6 +21,7 @@ const std::string PAUSE_FONT = "PAUSE-FONT";
 const std::string RESUME_BUTTON = "RESUME-BUTTON";
 const std::string RESTART_BUTTON = "RESTART-BUTTON";
 const std::string MENU_BUTTON = "MENU-BUTTON";
+const std::string GAMEOVER_FONT = "GAMEOVER-FONT";
 
 const char *const ICON_PATH = "assets/images/SFML-icon.png";
 
@@ -39,6 +40,7 @@ void loadAssets(AssetManager &asset)
     asset.loadFont(TITLE_FONT, "assets/fonts/SportypoReguler.ttf");
     asset.loadFont(CLICK_FONT, "assets/fonts/Cyberjunkies.ttf");
     asset.loadFont(PAUSE_FONT, "assets/fonts/PilotCommand.otf");
+    asset.loadFont(GAMEOVER_FONT, "assets/fonts/PilotCommand.otf");
     asset.loadSound(KICK_SOUND, "assets/sounds/bigbassfoot-kick.wav");
     asset.loadSound(SHOOT_SOUND, "assets/sounds/lotruesn.wav");
     asset.loadSound(HIT_SOUND, "assets/sounds/Tom7.wav");
@@ -69,5 +71,57 @@ SimpleButton makeButton(const sf::Texture *texture, sf::Vector2f pos,
       button.setOnClick(std::move(on_click));
     return button;
 }
+
+const std::vector<DrumNote> PATTERN = {
+  {DrumNote::KICK, 0.4f},
+  {DrumNote::KICK, 0.65f},
+  {DrumNote::SNARE, 0.2f},
+  {DrumNote::KICK, 1.3f},
+  {DrumNote::SNARE, 0.4f},
+  {DrumNote::KICK, 0.9f},
+  {DrumNote::KICK, 0.65f},
+  {DrumNote::SNARE, 0.2f},
+  {DrumNote::KICK, 1.3f},
+  {DrumNote::SNARE, 0.4f},
+  {DrumNote::KICK, 0.9f},
+  {DrumNote::KICK, 0.65f},
+  {DrumNote::SNARE, 0.2f},
+  {DrumNote::KICK, 1.3f},
+  {DrumNote::SNARE, 0.4f},
+  {DrumNote::KICK, 0.8f},
+  {DrumNote::KICK, 0.2f},
+  {DrumNote::KICK, 0.2f},
+  {DrumNote::SNARE, 0.4f},
+  {DrumNote::KICK, 0.6f},
+  {DrumNote::KICK, 0.4f},
+  {DrumNote::KICK, 0.2f},
+  {DrumNote::SNARE, 0.4f},
+  {DrumNote::KICK, 0.8f},
+  {DrumNote::KICK, 0.65f},
+  {DrumNote::SNARE, 0.2f},
+  {DrumNote::KICK, 1.3f},
+  {DrumNote::SNARE, 0.4f},
+  {DrumNote::KICK, 0.9f},
+  {DrumNote::KICK, 0.65f},
+  {DrumNote::SNARE, 0.2f},
+  {DrumNote::KICK, 1.3f},
+  {DrumNote::SNARE, 0.4f},
+  {DrumNote::KICK, 0.9f},
+  {DrumNote::KICK, 0.65f},
+  {DrumNote::SNARE, 0.2f},
+  {DrumNote::KICK, 1.3f},
+  {DrumNote::SNARE, 0.4f},
+  {DrumNote::KICK, 0.8f},
+  {DrumNote::KICK, 0.2f},
+  {DrumNote::KICK, 0.2f},
+  {DrumNote::SNARE, 0.4f},
+  {DrumNote::SNARE, 0.4f},
+  {DrumNote::KICK, 0.2f},
+  {DrumNote::KICK, 0.4f},
+  {DrumNote::KICK, 0.4f},
+  {DrumNote::SNARE, 0.2f},
+  {DrumNote::SNARE, 0.2f},
+  {DrumNote::SNARE, 0.2f},
+};
 
 } // namespace LaserWave

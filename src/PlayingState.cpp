@@ -20,10 +20,33 @@ PlayingState::PlayingState(GameDataRef data)
   m_cursor(&this->getAssets().getCursor(PLAYING_CURSOR)),
   m_shoot_sound(this->getAssets().getSound(SHOOT_SOUND)),
   m_kick_sound(this->getAssets().getSound(KICK_SOUND)),
-  m_hit_sound(this->getAssets().getSound(HIT_SOUND))
+  m_hit_sound(this->getAssets().getSound(HIT_SOUND)),
+  m_gameover_text(GAMEOVER_TEXT, this->getAssets().getFont(GAMEOVER_FONT),
+                  GAMEOVER_FONT_SIZE),
+  m_gameover_sub1_text(GAMEOVER_SUBTITLE1, 
+      this->getAssets().getFont(GAMEOVER_FONT), GAMEOVER_SUBTITLE_FONT_SIZE),
+  m_gameover_sub2_text(GAMEOVER_SUBTITLE2, 
+      this->getAssets().getFont(GAMEOVER_FONT), GAMEOVER_SUBTITLE_FONT_SIZE),
+  m_action_pattern(PATTERN)
 {
     this->m_health_bar.setHealth(this->m_player.health());
     this->m_shoot_sound.setVolume(50);
+
+    this->m_gameover_text.setPosition({
+        this->getWindow().getSize().x / 2 - this->m_gameover_text.getGlobalBounds().width / 2,
+        GAMEOVER_Y
+    });
+    this->m_gameover_text.setColor(GAMEOVER_COLOR);
+    this->m_gameover_sub1_text.setPosition({
+        this->getWindow().getSize().x / 2 - this->m_gameover_sub1_text.getGlobalBounds().width / 2,
+        GAMEOVER_SUBTITLE1_Y
+    });
+    this->m_gameover_sub1_text.setColor(GAMEOVER_COLOR);
+    this->m_gameover_sub2_text.setPosition({
+        this->getWindow().getSize().x / 2 - this->m_gameover_sub2_text.getGlobalBounds().width / 2,
+        GAMEOVER_SUBTITLE2_Y
+    });
+    this->m_gameover_sub2_text.setColor(GAMEOVER_COLOR);
 }
 PlayingState::~PlayingState() = default;
 
@@ -35,6 +58,7 @@ std::vector<StackRequest> PlayingState::update(sf::Time dt, EventManager &event)
       this->m_clock.add1Tick();
       this->m_enemy_spawn_timer += dt;
       this->m_sound_timer += dt;
+      this->m_action_timer += dt;
       this->m_player.update(dt);
       this->m_enemies.update(dt);
       this->m_particles.update(dt);
@@ -53,10 +77,19 @@ std::vector<StackRequest> PlayingState::update(sf::Time dt, EventManager &event)
           this->playerGetHit(direction);
       }
 
+      if (this->m_pending_hit_sound > 0 
+       && this->m_sound_timer.asSeconds() > 0.3f) {
+        this->m_hit_sound.play();
+        this->m_sound_timer = sf::Time::Zero;
+        this->m_pending_hit_sound--;
+      }
+
       this->m_health_bar.setHealth(this->m_player.health());
       if (!this->m_player.isAlive()) {
         this->m_state = GameState::OVER;
       }
+
+      this->action();
     }
     else if (this->m_state == GameState::OVER) {
       this->m_enemies.update(dt);
@@ -78,6 +111,12 @@ void PlayingState::render() const
     target.draw(this->m_clock);
     target.draw(this->m_health_bar);
 
+    if (this->m_state == GameState::OVER) {
+      target.draw(this->m_gameover_text);
+      target.draw(this->m_gameover_sub1_text);
+      target.draw(this->m_gameover_sub2_text);
+    }
+
     if (::show_hitbox)
       for (const auto *const &entity : Entity::allEntities())
         entity->showHitBoxTo(target);
@@ -91,28 +130,56 @@ void PlayingState::asTopState()
     this->getWindow().setMouseCursor(*this->m_cursor);
 }
 
+template<typename> class CheckType;
+
+void PlayingState::action()
+{
+  if (this->m_action_pattern.empty()) return;
+  auto next_note = this->m_action_pattern[this->m_action_iter];
+  auto next_action_delay = sf::seconds(next_note.delay);
+  if (this->m_action_timer >= next_action_delay) {
+
+    if (next_note.type == DrumNote::SNARE) {
+      auto mouse_pos = sf::Vector2f(sf::Mouse::getPosition());
+      sf::Vector2f direction = mouse_pos - m_player.getCenter();
+      direction = normalize(direction);
+      this->playerShoot(direction);
+    }
+    else if (next_note.type == DrumNote::KICK) {
+      auto mouse_pos = sf::Vector2f(sf::Mouse::getPosition());
+      sf::Vector2f direction = mouse_pos - m_player.getCenter();
+      direction = normalize(direction);
+      this->playerKick(direction);
+    }
+
+    this->m_action_timer -= next_action_delay;
+    this->m_action_iter = (this->m_action_iter + 1) % this->m_action_pattern.size();
+  }
+}
+
 void PlayingState::processInput(sf::Time dt, EventManager &event)
 {
     auto &&events = event.getPendingEvents();
     if (this->m_state == GameState::PLAYING) {
       for (const auto &e : events) {
-        if (e.type == sf::Event::MouseButtonPressed) {
-          auto click = e.mouseButton;
-          if (click.button == sf::Mouse::Left) {
-            sf::Vector2f direction = {click.x - m_player.getCenter().x,
-                                      click.y - m_player.getCenter().y};
-            direction = normalize(direction);
-            playerShoot(direction);
-          }
-          if (click.button == sf::Mouse::Right) {
-            sf::Vector2f direction = {click.x - m_player.getCenter().x,
-                                      click.y - m_player.getCenter().y};
-            direction = normalize(direction);
-            playerKick(direction);
-          }
-        }
+        // if (e.type == sf::Event::MouseButtonPressed) {
+        //   auto click = e.mouseButton;
+        //   if (click.button == sf::Mouse::Left) {
+        //     sf::Vector2f direction = {click.x - m_player.getCenter().x,
+        //                               click.y - m_player.getCenter().y};
+        //     direction = normalize(direction);
+        //     playerShoot(direction);
+        //   }
+        //   if (click.button == sf::Mouse::Right) {
+        //     sf::Vector2f direction = {click.x - m_player.getCenter().x,
+        //                               click.y - m_player.getCenter().y};
+        //     direction = normalize(direction);
+        //     playerKick(direction);
+        //   }
+        // }
         if (e.type == sf::Event::KeyPressed) {
-          if (e.key.code == sf::Keyboard::P)
+          if (e.key.code == sf::Keyboard::P 
+           || e.key.code == sf::Keyboard::Escape)
             this->requestPause();
         }
         if (e.type == sf::Event::LostFocus) {
@@ -120,7 +187,9 @@ void PlayingState::processInput(sf::Time dt, EventManager &event)
         }
       }
     }
-    else if (this->m_state == GameState::OVER) {for (const auto &e : events) {
+
+    else if (this->m_state == GameState::OVER) {
+      for (const auto &e : events) {
         if (e.type == sf::Event::MouseButtonPressed) {
           auto click = e.mouseButton;
           if (click.button == sf::Mouse::Left) {
@@ -215,10 +284,7 @@ void PlayingState::playerKick(sf::Vector2f direction)
 void PlayingState::playerGetHit(sf::Vector2f direction)
 {
     this->m_player.getHit(direction);
-    if (this->m_sound_timer.asSeconds() >= 0.1f) {
-      this->m_hit_sound.play();
-      this->m_sound_timer = sf::Time::Zero;
-    }
+    if (this->m_pending_hit_sound < 1) ++this->m_pending_hit_sound;
 }
 
 LaserEndPoint PlayingState::

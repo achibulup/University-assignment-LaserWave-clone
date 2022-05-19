@@ -24,6 +24,7 @@ extern const std::string PAUSE_FONT;
 extern const std::string RESUME_BUTTON;
 extern const std::string RESTART_BUTTON;
 extern const std::string MENU_BUTTON;
+extern const std::string GAMEOVER_FONT;
 
 extern const char *const ICON_PATH;
 
@@ -31,6 +32,19 @@ void loadAssets(AssetManager &asset);
 
 SimpleButton makeButton(const sf::Texture *texture, sf::Vector2f pos = {},
                         SimpleButton::OnClickFunctor functor = {});
+
+struct DrumNote
+{
+    enum Type
+    {
+        KICK,
+        SNARE,
+    }type;
+    float delay;
+};
+
+extern const float LOOP_LENGTH;
+extern const std::vector<DrumNote> PATTERN;
 
 } // namespace LaserWave
 

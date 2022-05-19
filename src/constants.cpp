@@ -46,16 +46,16 @@ const sf::Vector2f HEALTH_BAR_POSITION = {60.f, 60.f};
 const sf::Vector2f HEALTH_BAR_UNIT_SIZE = {30.f, 75.f};
 const float HEALTH_BAR_UNIT_SPACING = 20.f;
 
-const float GRAVITY = 200.f;
+const float GRAVITY = 300.f;
 
 const sf::Color PLAYER_COLOR = sf::Color(122, 49, 200);
 const sf::Color PLAYER_INVINCIBLE_COLOR = sf::Color::White;
 const sf::Vector2f PLAYER_SIZE = {32, 43};
-const float PLAYER_SPEED = 350.f;
+const float PLAYER_SPEED = 320.f;
 const float PLAYER_HIT_SPEED = 200.f;
 const float PLAYER_SHOOT_SPEED = 110.f;
 const float PLAYER_MIN_DRAG = 120.f;
-const float PLAYER_MAX_FALL = 150.f;
+const float PLAYER_MAX_FALL = 200.f;
 const int PLAYER_MAX_HEALTH = 5;
 const float PLAYER_INVINCIBILITY_DURATION = 1.f;
 
@@ -84,6 +84,16 @@ const sf::String PAUSE_TITLE = "PAUSED";
 const int PAUSE_TITLE_FONT_SIZE = 90;
 const float PAUSE_TITLE_Y = 45.f;
 const sf::Color PAUSE_TITLE_COLOR = sf::Color(77, 35, 113);
+
+const sf::Color GAMEOVER_COLOR = sf::Color(65, 59, 131);
+const sf::String GAMEOVER_TEXT = "GAME OVER";
+const int GAMEOVER_FONT_SIZE = 40;
+const float GAMEOVER_Y = 420.f;
+const sf::String GAMEOVER_SUBTITLE1 = "LEFT CLICK TO RESTART";
+const float GAMEOVER_SUBTITLE1_Y = 500.f;
+const sf::String GAMEOVER_SUBTITLE2 = "RIGHT CLICK TO GO TO MENU";
+const float GAMEOVER_SUBTITLE2_Y = 530.f;
+const int GAMEOVER_SUBTITLE_FONT_SIZE = 20;
 
 } // namespace Constants
 
