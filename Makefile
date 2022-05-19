@@ -10,7 +10,7 @@ clear:
 
 releasebuild: bin\Release\LaserWave.exe
 
-COMPILER = "D:\CODE\compilers\mingw64\bin\g++.exe"
+COMPILER = "g++.exe"
 INCLUDE_PATHS = -I"Libraries\SFML-2.5.1\include"
 LIBRARY_PATHS = -L"Libraries\SFML-2.5.1\lib"
 LIBRARIES = -lLIFOmemrsc -lsfmlext-tilemap -lsfmlext-pixels -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio 
