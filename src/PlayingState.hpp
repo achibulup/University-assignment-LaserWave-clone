@@ -8,6 +8,7 @@
 #include "GameClock.hpp"
 #include "HealthBar.hpp"
 #include "Particles.hpp"
+#include "assets.hpp"
 
 namespace LaserWave
 {
@@ -38,6 +39,7 @@ class PlayingState : public State
     void randomlySpawnEnemy();
     void filterOffScreenEnemies();
     void gameOver();
+    void action();
     void processInput(sf::Time dt, EventManager &event);
     void requestPause();
     void requestRestart();
@@ -68,6 +70,13 @@ class PlayingState : public State
     sf::Sound m_kick_sound;
     sf::Sound m_hit_sound;
     sf::Time m_sound_timer = sf::Time::Zero;
+    int m_pending_hit_sound = 0;
+    sf::Time m_action_timer = sf::Time::Zero;
+    std::vector<DrumNote> m_action_pattern;
+    int m_action_iter = 0;
+    sf::Text m_gameover_text;
+    sf::Text m_gameover_sub1_text;
+    sf::Text m_gameover_sub2_text;
     std::vector<StackRequest> m_requests;
 };
 
