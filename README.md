@@ -25,8 +25,10 @@ Sau đó, tìm thư mục Mingw được tạo ra và đưa đường dẫn củ
 
 4. Chạy trương trình
  Vào thư mục bin/Debug, chạy chương trình LaserWave.exe
- Nếu không chạy được thì hãy chạy file run.sh bằng Git Bash
  
+ * Nếu không chạy được thì hãy chạy file run.sh bằng Git Bash
+ 
+ * Nếu muốn chạy game mà có hitbox thì chạy run-with-hitbox.sh
  
 ### II: Mô tả chung về trò chơi
 
@@ -34,6 +36,7 @@ Sau đó, tìm thư mục Mingw được tạo ra và đưa đường dẫn củ
 
 ### III: Mô tả các chức năng
 
+#### - Video demo: https://www.youtube.com/watch?v=AP54BXVLjI0
 
 - Khi mở ra sẽ có splashscreen xuất hiện trong vài giây, có thể click chuột trái rút ngắn thời gian này.
 - Sau splashscreen sẽ xuất hiện menu. Ở đây người chơi nhấn bất kỳ đâu để chơi hoặc nhấn nút exit ở góc màn hình để thoát.
@@ -43,6 +46,7 @@ Sau đó, tìm thư mục Mingw được tạo ra và đưa đường dẫn củ
 - Có thanh máu ở góc trái trên màn mình.
 - Khi va chạm, bạn sẽ được miễn sát thương va chạm trong một thời gian ngắn.
 - Có thể nhấn P hoặc Esc để tạm dừng. Ở đây có nút tiếp tục, chơi lại hoặc về menu.
+- Có thể hiện hitbox của người chơi và địch bằng cách chạy chương trình bằng 
 
 ### IV: Các kỹ thuật lập trình được sử dụng
 - Các yếu tố cơ bản đã được dạy trên lớp: mảng, hàm, con trỏ, struct, class
