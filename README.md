@@ -56,4 +56,4 @@
 ### V: Kết luận
 - Game này còn nhiều thiếu sót do vấn đề thời gian: chưa có bảng điểm, lưu tiến trình, không có nhiều loại địch, không có boss, không có level, tùy chỉnh... nhưng
 - Trong khi làm game đã học được nhều thứ: biết cấu trúc, cách sử dụng của một thư viện đơn giản, hiểu cơ bản cách tự tạo thư viện cho mình; Đã vận dụng được nhiều kiến thức về lập trình đã được học, nhất là các kiến thức nâng cao; Rèn luyện, hiểu thêm các nguyên tắc trong lập trình; Hiểu cơ bản cấu trúc của một trò chơi thông thường.
-- Phương hướng phát triển: thêm các tính năng cho trò chơi (các tính năng còn thiếu đã nói ở trên); học thêm các thư viện, framework, học hỏi thêm các kỹ thuật lập trình.
+- Phương hướng phát triển: thêm các tính năng cho trò chơi (các tính năng còn thiếu đã nói ở trên); học thêm các thư viện, framework, học hỏi, tham khảo thêm các kỹ thuật lập trình, làm dự án nhóm.
