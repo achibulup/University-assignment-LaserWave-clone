@@ -12,12 +12,13 @@
 
 2. Tải và cài đặt bộ dịch (compiler) GCC 7.3.0 MinGW(SEH) tại:
 
-Windows 32bit: https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/7.3.0/threads-posix/dwarf/i686-7.3.0-release-posix-dwarf-rt_v5-rev0.7z/download
-Windows 64bit, MAC hoặc Linux: https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/7.3.0/threads-posix/seh/x86_64-7.3.0-release-posix-seh-rt_v5-rev0.7z/download
- 
-- Lưu ý: Phải cài chính xác bộ dịch này.
+  * Windows 32bit: https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/7.3.0/threads-posix/dwarf/i686-7.3.0-release-posix-dwarf-rt_v5-rev0.7z/download
 
-Sau đó, tìm thư mục Mingw được tạo ra và đưa đường dẫn của mingw/bin vào Path Environment Variables
+  * Windows 64bit, MAC hoặc Linux: https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/7.3.0/threads-posix/seh/x86_64-7.3.0-release-posix-seh-rt_v5-rev0.7z/download
+ 
+#### * Lưu ý: Phải cài chính xác bộ dịch này.
+
+  * Sau đó, tìm thư mục Mingw được tạo ra và đưa đường dẫn của mingw/bin vào Path Environment Variables
 
 3. Xây dựng chương trình từ mã nguồn
  Chọn file build.sh, nhấp chọn mở bằng Git Bash.
