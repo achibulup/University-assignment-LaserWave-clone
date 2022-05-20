@@ -1,14 +1,12 @@
-build: bin\Debug\LaserWave.exe
+build: bin\LaserWave.exe
 build_and_run: build
-	(cd "bin\Debug" && ."\LaserWave.exe")
+	(cd "bin" && ."\LaserWave.exe")
 
 run_with_hitbox: build
-	(cd "bin\Debug" && ."\LaserWave.exe" -hitbox)
+	(cd "bin" && ."\LaserWave.exe" -hitbox)
 
 clear:
 	rm -rf obj/*.o
-
-releasebuild: bin\Release\LaserWave.exe
 
 COMPILER = "g++.exe"
 INCLUDE_PATHS = -I"Libraries\SFML-2.5.1\include"
@@ -16,7 +14,7 @@ LIBRARY_PATHS = -L"Libraries\SFML-2.5.1\lib"
 LIBRARIES = -lLIFOmemrsc -lsfmlext-tilemap -lsfmlext-pixels -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio 
 COMPILER_FLAGS = -g -std=c++17 -Wall -Wextra -Wpedantic -Wno-unused-function -Wno-unused-parameter
 
-bin\Debug\LaserWave.exe: \
+bin\LaserWave.exe: \
     obj\main.o obj\AssetManager.o obj\BasicEnemy.o obj\constants.o\
     obj\Enemies.o obj\Entity.o obj\EventManager.o obj\assets.o obj\Game.o\
     obj\GameClock.o obj\HealthBar.o obj\KickParticle.o obj\LaserBeam.o\
