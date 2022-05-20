@@ -25,7 +25,7 @@
  Khi chạy xong, chương trình LaswerWave.exe sẽ được tạo ra ở thư mục bin
 
 4. Chạy trương trình
- Vào thư mục bin/Debug, chạy chương trình LaserWave.exe
+ Vào thư mục bin, chạy chương trình LaserWave.exe
  
  * Nếu không chạy được thì hãy chạy file run.sh bằng Git Bash
  
