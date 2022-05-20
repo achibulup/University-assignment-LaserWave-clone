@@ -22,7 +22,7 @@
 
 3. Xây dựng chương trình từ mã nguồn
  Chọn file build.sh, nhấp chọn mở bằng Git Bash.
- Khi chạy xong, chương trình LaswerWave.exe sẽ được tạo ra ở thư mục bin/Debug
+ Khi chạy xong, chương trình LaswerWave.exe sẽ được tạo ra ở thư mục bin
 
 4. Chạy trương trình
  Vào thư mục bin/Debug, chạy chương trình LaserWave.exe

@@ -1,0 +1,1 @@
+./LaserWave.exe -hitbox

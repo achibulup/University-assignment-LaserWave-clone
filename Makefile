@@ -21,7 +21,7 @@ bin\LaserWave.exe: \
     obj\MenuState.o obj\Particles.o obj\PauseState.o obj\Player.o\
     obj\PlayingState.o obj\randoms.o obj\SimpleGUI.o obj\SplashState.o\
     obj\StateMachine.o
-	$(COMPILER) -o "bin\Debug\LaserWave.exe"\
+	$(COMPILER) -o "bin\LaserWave.exe"\
     "obj\main.o" "obj\AssetManager.o" "obj\BasicEnemy.o" "obj\constants.o"\
     "obj\Entity.o" "obj\Enemies.o" "obj\EventManager.o" "obj\assets.o"\
     "obj\Game.o" "obj\GameClock.o" "obj\HealthBar.o" "obj\KickParticle.o"\
