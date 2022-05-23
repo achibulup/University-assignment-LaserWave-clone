@@ -21,6 +21,7 @@
   * Sau đó, tìm thư mục Mingw được tạo ra và đưa đường dẫn của mingw/bin vào Path Environment Variables
 
 3. Xây dựng chương trình từ mã nguồn
+4. 
  Chọn file build.sh, nhấp chọn mở bằng Git Bash.
  Khi chạy xong, chương trình LaswerWave.exe sẽ được tạo ra ở thư mục bin
 
