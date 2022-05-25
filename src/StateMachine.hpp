@@ -65,7 +65,7 @@ class StateMachine
 template<typename S, typename ...Args>
 void StateMachine::pushState(Args&& ...args)
 {
-    this->m_states.emplace<S>(this->m_data, std::forward<Args>(args)...);
+    this->m_states.emplace<S>(this->m_data, static_cast<Args&&>(args)...);
 }
 
 } // namespace LaserWave

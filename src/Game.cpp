@@ -93,7 +93,7 @@ State& Game::getActiveState()
 void Game::processChangeRequests(std::vector<StateRequest> requests)
 {
     for (auto &request : requests) {
-      this->m_states.processRequest(request);
+      this->m_states.processRequest(std::move(request));
     }
     if (!requests.empty() && !this->m_states.empty())
       this->m_states.getTopState().asTopState();

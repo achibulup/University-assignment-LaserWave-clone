@@ -44,6 +44,10 @@ extern const float RESUME_BUTTON_Y;
 extern const float RESTART_BUTTON_Y;
 extern const float MENU_BUTTON_Y;
 
+extern const float TRANSITION_DURATION;
+extern const float TRANSITION_END_DELAY;
+extern const Angle WIPE_ANGLE;
+
 extern const int GAMECLOCK_FONT_SIZE;
 extern const sf::Vector2f GAMECLOCK_POS;
 extern const sf::Color GAMECLOCK_COLOR;

@@ -60,7 +60,15 @@ private:
     bool m_paused = false;
 };
 
-
+template<typename ...Reqs>
+std::vector<StateRequest> makeRequests(Reqs... reqs)
+{
+    StateRequest *requests[] = { &reqs... };
+    std::vector<StateRequest> result;
+    for (auto *req : requests)
+        result.push_back(std::move(*req));
+    return result;
+}
 
 } // namespace LaserWave
 

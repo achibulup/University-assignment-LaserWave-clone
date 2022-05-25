@@ -65,12 +65,12 @@ class PolymorphicStack
     template<typename Tp, typename Elem = std::decay_t<Tp>>
     Elem* push(Tp &&element)
     {
-        return this->pushBack(std::forward<Tp>(element));
+        return this->pushBack(static_cast<Tp&&>(element));
     }
     template<typename Elem = Base, typename ...Args>
     Elem* emplace(Args&& ...args)
     {
-        return this->emplaceBack<Elem>(std::forward<Args>(args)...);
+        return this->emplaceBack<Elem>(static_cast<Args&&>(args)...);
     }
 
     void pop()

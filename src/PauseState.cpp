@@ -2,6 +2,7 @@
 #include "assets.hpp"
 #include "constants.hpp"
 #include "PlayingState.hpp"
+#include "WipeTransitionState.hpp"
 #include "stateRequests.hpp"
 
 namespace LaserWave
@@ -43,8 +44,14 @@ PauseState::PauseState(GameDataRef data)
     );
     SimpleButton restart_button = makeButton(restart_texture, restart_pos,
         [this]() {
-            this->m_requests.push_back(makePopPastRequest(PlayingState::ID));
-            this->m_requests.push_back(makePushRequest<PlayingState>());
+            auto restart_request = makeRequests(
+                makePopPastRequest(PlayingState::ID),
+                makePushRequest<PlayingState>());
+            this->m_requests.push_back(
+                [reqs = std::move(restart_request)] (StateMachine &machine) {
+                    machine.pushState<WipeTransitionState>(std::move(reqs));
+                }
+            );
         }
     );
     SimpleButton menu_button = makeButton(menu_texture, menu_pos,

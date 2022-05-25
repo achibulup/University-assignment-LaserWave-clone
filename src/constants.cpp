@@ -38,6 +38,10 @@ const float RESUME_BUTTON_Y = 400.f;
 const float RESTART_BUTTON_Y = 520.f;
 const float MENU_BUTTON_Y = 640.f;
 
+const float TRANSITION_DURATION = 0.25f;
+const float TRANSITION_END_DELAY = 0.25f;
+const Angle WIPE_ANGLE = Angle::fromDegrees(30);
+
 const int GAMECLOCK_FONT_SIZE = 30;
 const sf::Vector2f GAMECLOCK_POS = {WINDOW_SIZE.x / 2, 30.f};
 const sf::Color GAMECLOCK_COLOR = sf::Color::White;

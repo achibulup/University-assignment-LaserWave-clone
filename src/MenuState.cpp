@@ -3,6 +3,7 @@
 #include "constants.hpp"
 #include "PlayingState.hpp"
 #include "stateRequests.hpp"
+#include "WipeTransitionState.hpp"
 
 namespace LaserWave
 {
@@ -49,7 +50,13 @@ std::vector<StateRequest> MenuState::update(sf::Time dt, EventManager &event)
 
     if (this->m_GUI.respondToEvent(event)) {}
     else if (event.isMouseButtonPressed(sf::Mouse::Left)) {
-      this->m_requests.push_back(makePushRequest<PlayingState>());
+      auto play_request = makeRequests(makePushRequest<PlayingState>());
+      this->m_requests.push_back(
+          [reqs = std::move(play_request)] 
+          (StateMachine &machine) {
+              machine.pushState<WipeTransitionState>(std::move(reqs));
+          }
+      );
       this->pause();
     }
     return std::move(this->m_requests);

@@ -7,6 +7,7 @@
 #include "LaserBeam.hpp"
 #include "PauseState.hpp"
 #include "stateRequests.hpp"
+#include "WipeTransitionState.hpp"
 
 extern bool show_hitbox;
 
@@ -198,9 +199,14 @@ void PlayingState::requestPause()
 }
 
 void PlayingState::requestRestart()
-{
-    this->m_requests.push_back(makePopRequest());
-    this->m_requests.push_back(makePushRequest<PlayingState>());
+{          
+    auto restart_request = makeRequests(makePopRequest(),
+                                        makePushRequest<PlayingState>());
+    this->m_requests.push_back(
+        [reqs = std::move(restart_request)] (StateMachine &machine) {
+            machine.pushState<WipeTransitionState>(std::move(reqs));
+        }
+    );
 }
 
 void PlayingState::requestMenu()

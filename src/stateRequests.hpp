@@ -11,7 +11,7 @@ StateRequest makePushRequest(Args&& ...args)
 {
     return [&](StateMachine& machine)
     {
-        machine.pushState<S>(std::forward<Args>(args)...);
+        machine.pushState<S>(static_cast<Args&&>(args)...);
     };
 }
 StateRequest makePopRequest();

@@ -31,7 +31,7 @@ extern const char *const ICON_PATH;
 void loadAssets(AssetManager &asset);
 
 SimpleButton makeButton(const sf::Texture *texture, sf::Vector2f pos = {},
-                        SimpleButton::OnClickFunctor functor = {});
+                        SimpleButton::OnClickFunctor on_click = {});
 
 struct DrumNote
 {
