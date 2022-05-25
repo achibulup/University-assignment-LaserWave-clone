@@ -10,14 +10,19 @@ namespace LaserWave
 class PauseState : public State
 {
   public:
-    static const State::Id ID = State::Id::PAUSED;
+    static const State::Id ID;
 
-    PauseState(GameDataRef data);
+    explicit PauseState(GameDataRef data);
     PauseState(const PauseState&) = delete;
     void operator = (PauseState) = delete;
     ~PauseState();
 
-    std::vector<StackRequest> update(sf::Time dt, EventManager &event) override;
+    virtual State::Id getId() const override
+    {
+        return ID;
+    }
+
+    std::vector<StateRequest> update(sf::Time dt, EventManager &event) override;
     void render() const override;
 
     void asTopState() override;
@@ -25,7 +30,7 @@ class PauseState : public State
   private:
     const sf::Cursor *m_cursor;
     SimpleGUI m_GUI;
-    std::vector<StackRequest> m_requests;
+    std::vector<StateRequest> m_requests;
     sf::Text m_pause_text;
 };
 

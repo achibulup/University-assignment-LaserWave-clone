@@ -22,15 +22,20 @@ struct LaserEndPoint
 class PlayingState : public State
 {
   public:
-    static const State::Id ID = State::Id::PLAYING;
+    static const State::Id ID;
 
-    PlayingState(GameDataRef data);
+    explicit PlayingState(GameDataRef data);
     PlayingState(const PlayingState&) = delete;
     void operator = (PlayingState) = delete;
     ~PlayingState();
 
+    State::Id getId() const override
+    {
+        return ID;
+    }
+
     // void init() override;
-    std::vector<StackRequest> update(sf::Time dt, EventManager &event) override;
+    std::vector<StateRequest> update(sf::Time dt, EventManager &event) override;
     void render() const override;
 
     void asTopState() override;
@@ -77,7 +82,7 @@ class PlayingState : public State
     sf::Text m_gameover_text;
     sf::Text m_gameover_sub1_text;
     sf::Text m_gameover_sub2_text;
-    std::vector<StackRequest> m_requests;
+    std::vector<StateRequest> m_requests;
 };
 
 } // namespace LaserWave

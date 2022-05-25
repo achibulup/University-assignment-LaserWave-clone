@@ -4,13 +4,16 @@
 #include "EventManager.hpp"
 #include <SFML/Graphics.hpp>
 #include <vector>
+#include <string_view>
+#include <functional>
 
 namespace LaserWave
 {
-struct StackRequest;
 
 class AssetManager;
 class StateMachine;
+
+using StateRequest = std::function<void(StateMachine&)>;
 
 struct GameDataRef
 {
@@ -22,13 +25,16 @@ struct GameDataRef
 class State
 {
 public:
-    enum class Id : int {NONE = 0, SPLASH, MENU, PLAYING, PAUSED, GAMEOVER};
+    using Id = std::string_view;
 
-    State(GameDataRef data) : m_data(data) {}
+    explicit State(GameDataRef data) : m_data(data) {}
     virtual ~State() = default;
 
+    virtual Id getId() const = 0;
+
     // virtual void init() = 0;
-    virtual std::vector<StackRequest> update(sf::Time dt, EventManager &event) = 0;
+    virtual std::vector<StateRequest> update(sf::Time dt, EventManager&) = 0;
+
     virtual void render() const = 0;
 
     void pause() { this->m_paused = true; }
@@ -54,23 +60,7 @@ private:
     bool m_paused = false;
 };
 
-struct StackRequest
-{
-    enum Action
-    {
-        NONE,
-        PUSH,
-        POP,
-        CLEAR,
-        QUIT
-    };
 
-    StackRequest(Action action = Action::NONE, State::Id id = State::Id::NONE)
-    noexcept : action(action), id(id) {}
-
-    Action action = NONE;
-    State::Id id;
-};
 
 } // namespace LaserWave
 

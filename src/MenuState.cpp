@@ -2,9 +2,12 @@
 #include "assets.hpp"
 #include "constants.hpp"
 #include "PlayingState.hpp"
+#include "stateRequests.hpp"
 
 namespace LaserWave
 {
+
+const State::Id MenuState::ID = "Menu";
 
 sf::Color calcClickMessageColor(sf::Time time);
 
@@ -30,7 +33,7 @@ MenuState::MenuState(GameDataRef data)
     const sf::Texture *exit_texture = &this->getAssets().getTexture(EXIT_BUTTON);
     SimpleButton exit_button = makeButton(exit_texture, EXIT_BUTTON_POS,
         [this]() {
-            this->m_requests.push_back(StackRequest::QUIT);
+            this->m_requests.push_back(makeClearRequest());
         }
     );
     this->m_GUI.addButton(std::move(exit_button));
@@ -38,7 +41,7 @@ MenuState::MenuState(GameDataRef data)
 }
 MenuState::~MenuState() = default;
  
-std::vector<StackRequest> MenuState::update(sf::Time dt, EventManager &event)
+std::vector<StateRequest> MenuState::update(sf::Time dt, EventManager &event)
 { 
     this->m_message_timer += dt;
     this->m_click_to_play_message.setColor(
@@ -46,7 +49,7 @@ std::vector<StackRequest> MenuState::update(sf::Time dt, EventManager &event)
 
     if (this->m_GUI.respondToEvent(event)) {}
     else if (event.isMouseButtonPressed(sf::Mouse::Left)) {
-      this->m_requests.push_back({StackRequest::PUSH, PlayingState::ID});
+      this->m_requests.push_back(makePushRequest<PlayingState>());
       this->pause();
     }
     return std::move(this->m_requests);

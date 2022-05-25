@@ -10,38 +10,33 @@ namespace LaserWave
 
 StateMachine::StateMachine(GameDataRef data) : m_data(std::move(data)) {}
 
-void StateMachine::pushState(State::Id id)
-{
-///TODO
-    switch (id) {
-      case SplashState::ID :
-        this->m_states.emplace<SplashState>(this->m_data);
-      break;
-      case MenuState::ID :
-        this->m_states.emplace<MenuState>(this->m_data);
-      break;
-      case PlayingState::ID :
-        this->m_states.emplace<PlayingState>(this->m_data);
-      break;
-      case PauseState::ID :
-        this->m_states.emplace<PauseState>(this->m_data);
-      break;
-      default:
-        throw std::runtime_error("Unknown state id");
-    }
-}
+// void StateMachine::pushState(State::Id id)
+// {
+// ///TODO
+//     switch (id) {
+//       case SplashState::ID :
+//         this->m_states.emplace<SplashState>(this->m_data);
+//       break;
+//       case MenuState::ID :
+//         this->m_states.emplace<MenuState>(this->m_data);
+//       break;
+//       case PlayingState::ID :
+//         this->m_states.emplace<PlayingState>(this->m_data);
+//       break;
+//       case PauseState::ID :
+//         this->m_states.emplace<PauseState>(this->m_data);
+//       break;
+//       default:
+//         throw std::runtime_error("Unknown state id");
+//     }
+// }
 
 
-void StateMachine::popState()
-{
-    if (this->empty()) 
-      throw std::runtime_error("StateMachine::popState(): empty stack");
-    m_states.pop();
-}
 
-State& StateMachine::getActiveState()
+
+void StateMachine::processRequest(StateRequest request)
 {
-    return m_states.top();
+    request(*this);
 }
 
 } // namespace LaserWave

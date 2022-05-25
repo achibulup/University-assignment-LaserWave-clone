@@ -10,15 +10,20 @@ namespace LaserWave
 class SplashState : public State
 {
   public:
-    static const State::Id ID = State::Id::SPLASH;
+    static const State::Id ID;
 
-    SplashState(GameDataRef data);
+    explicit SplashState(GameDataRef data);
     SplashState(const SplashState&) = delete;
     void operator = (SplashState) = delete;
     ~SplashState();
 
+    State::Id getId() const override
+    {
+        return ID;
+    }
+
     // void init() override;
-    std::vector<StackRequest> update(sf::Time dt, EventManager &event) override;
+    std::vector<StateRequest> update(sf::Time dt, EventManager&) override;
     void render() const override;
 
   private:

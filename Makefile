@@ -20,14 +20,14 @@ bin\LaserWave.exe: \
     obj\GameClock.o obj\HealthBar.o obj\KickParticle.o obj\LaserBeam.o\
     obj\MenuState.o obj\Particles.o obj\PauseState.o obj\Player.o\
     obj\PlayingState.o obj\randoms.o obj\SimpleGUI.o obj\SplashState.o\
-    obj\StateMachine.o
+    obj\StateMachine.o obj\stateRequests.o
 	$(COMPILER) -o "bin\LaserWave.exe"\
     "obj\main.o" "obj\AssetManager.o" "obj\BasicEnemy.o" "obj\constants.o"\
     "obj\Entity.o" "obj\Enemies.o" "obj\EventManager.o" "obj\assets.o"\
     "obj\Game.o" "obj\GameClock.o" "obj\HealthBar.o" "obj\KickParticle.o"\
 		"obj\Laserbeam.o" "obj\MenuState.o" "obj\Particles.o" "obj\PauseState.o"\
-    "obj\Player.o" "obj\PlayingState.o"\
-    "obj\randoms.o" "obj\SimpleGUI.o" "obj\SplashState.o" "obj\StateMachine.o"\
+    "obj\Player.o" "obj\PlayingState.o" "obj\randoms.o" "obj\SimpleGUI.o"\
+    "obj\SplashState.o" "obj\StateMachine.o" "obj\stateRequests.o"\
     $(LIBRARY_PATHS) $(LIBRARIES) -Wl,-subsystem,windows
 
 
@@ -102,6 +102,9 @@ obj\SplashState.o: src\SplashState.cpp
 
 obj\StateMachine.o: src\StateMachine.cpp
 	$(MAKE) compile UNIT_NAME=StateMachine
+
+obj\stateRequests.o: src\stateRequests.cpp
+	$(MAKE) compile UNIT_NAME=stateRequests
 
 
 src\main.cpp: src\Game.hpp
@@ -227,5 +230,13 @@ src\StateMachine.cpp: src\StateMachine.hpp src\State.hpp
 
 src\StateMachine.hpp: src\State.hpp src\AssetManager.hpp
 	touch src\StateMachine.hpp
+
+src\stateRequests.cpp: src\stateRequests.hpp
+	touch src\stateRequests.cpp
+
+src\stateRequests.hpp: src\StateMachine.hpp
+	touch src\stateRequests.hpp
+
+
 
 

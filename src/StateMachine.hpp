@@ -17,18 +17,31 @@ class StateMachine
         return this->m_states.empty();
     }
 
-    template<typename S>
-    void pushState(S &&state);
+    template<typename S, typename ...Args>
+    void pushState(Args&&...);
 
-    void popState();
+    void popState()
+    {
+        if (this->empty()) 
+          throw std::runtime_error("StateMachine::popState(): empty stack");
+        m_states.pop();
+    }
+
     void clearStates()
     {
         this->m_states.clear();
     }
 
-    void pushState(State::Id id);
+    // void pushState(State::Id id);
 
-    State& getActiveState();
+    void processRequest(StateRequest request);
+
+    State& getTopState()
+    {
+        if (this->empty())
+            throw std::runtime_error("StateMachine::getTopState(): empty stack");
+        return this->m_states.top();
+    }
 
     int size() const noexcept
     {
@@ -49,10 +62,10 @@ class StateMachine
     GameDataRef m_data;
 };
 
-template<typename S>
-void StateMachine::pushState(S &&state)
+template<typename S, typename ...Args>
+void StateMachine::pushState(Args&& ...args)
 {
-    this->m_states.push(std::forward<S>(state));
+    this->m_states.emplace<S>(this->m_data, std::forward<Args>(args)...);
 }
 
 } // namespace LaserWave

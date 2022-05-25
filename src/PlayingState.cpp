@@ -6,11 +6,14 @@
 #include "KickParticle.hpp"
 #include "LaserBeam.hpp"
 #include "PauseState.hpp"
+#include "stateRequests.hpp"
 
 extern bool show_hitbox;
 
 namespace LaserWave
 {
+
+const State::Id PlayingState::ID = "Playing";
 
 PlayingState::PlayingState(GameDataRef data) 
 : State(data),
@@ -50,7 +53,7 @@ PlayingState::PlayingState(GameDataRef data)
 }
 PlayingState::~PlayingState() = default;
 
-std::vector<StackRequest> PlayingState::update(sf::Time dt, EventManager &event)
+std::vector<StateRequest> PlayingState::update(sf::Time dt, EventManager &event)
 {
     if (this->m_state == GameState::PAUSED) return {};
 
@@ -191,18 +194,18 @@ void PlayingState::processInput(sf::Time dt, EventManager &event)
 void PlayingState::requestPause()
 {
     this->m_state = GameState::PAUSED;
-    this->m_requests.push_back({StackRequest::PUSH, PauseState::ID});
+    this->m_requests.push_back(makePushRequest<PauseState>());
 }
 
 void PlayingState::requestRestart()
 {
-    this->m_requests.push_back(StackRequest::POP);
-    this->m_requests.push_back({StackRequest::PUSH, PlayingState::ID});
+    this->m_requests.push_back(makePopRequest());
+    this->m_requests.push_back(makePushRequest<PlayingState>());
 }
 
 void PlayingState::requestMenu()
 {
-    this->m_requests.push_back(StackRequest::POP);
+    this->m_requests.push_back(makePopRequest());
 }
 
 void PlayingState::filterOffScreenEnemies()
@@ -225,7 +228,7 @@ void PlayingState::gameOver()
 {
     this->m_state = GameState::OVER;
     this->m_requests.clear();
-    this->m_requests.push_back(StackRequest::QUIT);
+    this->m_requests.push_back(makeClearRequest());
 }
 
 

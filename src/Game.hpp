@@ -38,7 +38,7 @@ class Game
     void updateScreen();
 
     EventManager getEvents();
-    void processChangeRequests(std::vector<StackRequest> requests);
+    void processChangeRequests(std::vector<StateRequest> requests);
 
     State& getActiveState();
 

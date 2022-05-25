@@ -2,9 +2,12 @@
 #include "assets.hpp"
 #include "constants.hpp"
 #include "PlayingState.hpp"
+#include "stateRequests.hpp"
 
 namespace LaserWave
 {
+
+const State::Id PauseState::ID = "Pause";
 
 PauseState::PauseState(GameDataRef data)
 : State(data), m_cursor(&this->getAssets().getCursor(DEFAULT_CURSOR)),
@@ -35,20 +38,18 @@ PauseState::PauseState(GameDataRef data)
 
     SimpleButton resume_button = makeButton(resume_texture, resume_pos,
         [this]() {
-            this->m_requests.push_back(StackRequest::POP);
+            this->m_requests.push_back(makePopRequest());
         }
     );
     SimpleButton restart_button = makeButton(restart_texture, restart_pos,
         [this]() {
-            this->m_requests.push_back(StackRequest::POP);
-            this->m_requests.push_back(StackRequest::POP);
-            this->m_requests.push_back({StackRequest::PUSH, PlayingState::ID});
+            this->m_requests.push_back(makePopPastRequest(PlayingState::ID));
+            this->m_requests.push_back(makePushRequest<PlayingState>());
         }
     );
     SimpleButton menu_button = makeButton(menu_texture, menu_pos,
         [this]() {
-            this->m_requests.push_back(StackRequest::POP);
-            this->m_requests.push_back(StackRequest::POP);
+            this->m_requests.push_back(makePopPastRequest(PlayingState::ID));
         }
     );
 
@@ -58,12 +59,12 @@ PauseState::PauseState(GameDataRef data)
 }
 PauseState::~PauseState() = default;
 
-std::vector<StackRequest> PauseState::update(sf::Time dt, EventManager &event)
+std::vector<StateRequest> PauseState::update(sf::Time dt, EventManager &event)
 {
     if (this->m_GUI.respondToEvent(event)) {}
     else if (event.isKeyPressed(sf::Keyboard::P) 
           || event.isKeyPressed(sf::Keyboard::Escape)) {
-      this->m_requests.push_back(StackRequest::POP);
+      this->m_requests.push_back(makePopRequest());
     }
     return std::move(this->m_requests);
 }

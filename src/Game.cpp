@@ -10,7 +10,7 @@ Game::Game() : m_states(this->getData())
 {
     this->initWindow();
     this->load();
-    this->m_states.pushState(SplashState::ID);
+    this->m_states.pushState<SplashState>();
 }
 Game::~Game() {}
 
@@ -87,31 +87,16 @@ void Game::updateScreen()
 
 State& Game::getActiveState()
 {
-    return this->m_states.getActiveState();
+    return this->m_states.getTopState();
 }
 
-void Game::processChangeRequests(std::vector<StackRequest> requests)
+void Game::processChangeRequests(std::vector<StateRequest> requests)
 {
     for (auto &request : requests) {
-      switch (request.action) {
-        case StackRequest::Action::PUSH:
-          this->m_states.pushState(request.id);
-          break;
-        case StackRequest::Action::POP:
-          this->m_states.popState();
-          break;
-        case StackRequest::Action::CLEAR:
-          this->m_states.clearStates();
-        break;
-        case StackRequest::Action::QUIT:
-          throw ExitGame();
-        break;
-        default:
-          break;
-      }
+      this->m_states.processRequest(request);
     }
     if (!requests.empty() && !this->m_states.empty())
-      this->m_states.getActiveState().asTopState();
+      this->m_states.getTopState().asTopState();
 }
 
 } // namespace LaserWave

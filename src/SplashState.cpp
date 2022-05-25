@@ -1,14 +1,16 @@
 #include "SplashState.hpp"
 #include "constants.hpp"
 #include "assets.hpp"
-#include "PlayingState.hpp"
 #include "MenuState.hpp"
 #include "GameMaths.hpp"
 #include "randoms.hpp"
+#include "stateRequests.hpp"
 #include <SFML/Achibulup_extensions/Pixels.hpp>
 
 namespace LaserWave
 {
+
+const State::Id SplashState::ID = "Splash";
 
 SplashState::SplashState(GameDataRef data)
 : State(data),
@@ -35,9 +37,9 @@ SplashState::SplashState(GameDataRef data)
 
 SplashState::~SplashState() = default;
 
-std::vector<StackRequest> SplashState::update(sf::Time dt, EventManager &event)
+std::vector<StateRequest> SplashState::update(sf::Time dt, EventManager &event)
 {
-    std::vector<StackRequest> requests;
+    std::vector<StateRequest> requests;
     this->m_phase_time += dt;
     if (event.isMouseButtonPressed(sf::Mouse::Left) 
      && this->m_phase != Phase::QUICK_END)
@@ -79,8 +81,8 @@ std::vector<StackRequest> SplashState::update(sf::Time dt, EventManager &event)
       }break;
       case Phase::END_DELAY: {
         if (this->m_phase_time.asSeconds() >= SPLASH_SCREEN_END_DELAY) {
-          requests.push_back({StackRequest::POP});
-          requests.push_back({StackRequest::PUSH, MenuState::ID});
+          requests.push_back(makePopRequest());
+          requests.push_back(makePushRequest<MenuState>());
         }
         else this->m_alpha = 0;
       }break;
