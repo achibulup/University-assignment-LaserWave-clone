@@ -239,7 +239,7 @@ class BufferedLIFOMemResource : public LIFOMemoryResource
     }
 
   protected:
-    Byte m_buffer[BUFFERSIZE];
+    alignas(alignof(std::max_align_t)) m_buffer[BUFFERSIZE];
 };
 
 }
