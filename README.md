@@ -8,9 +8,8 @@
 
 
 1. Clone repo về một folder nào đó thông qua lệnh
-'''
+
 git clone https://github.com/achibulup/University-assignment---project-LaserWave.git
-'''
 
 2. Tải và cài đặt bộ dịch (compiler) GCC 7.3.0 MinGW(SEH) tại:
 
