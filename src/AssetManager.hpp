@@ -1,6 +1,7 @@
 #ifndef ASSETMANAGER_HPP_INCLUDED
 #define ASSETMANAGER_HPP_INCLUDED
 
+#include "commons.hpp"
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include <string>

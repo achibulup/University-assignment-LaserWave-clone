@@ -17,18 +17,19 @@ COMPILER_FLAGS = -g -std=c++17 -Wall -Wextra -Wpedantic -Wno-unused-function -Wn
 bin\LaserWave.exe: \
     obj\main.o obj\AssetManager.o obj\BasicEnemy.o obj\constants.o\
     obj\Enemies.o obj\Entity.o obj\EventManager.o obj\assets.o obj\Game.o\
-    obj\GameClock.o obj\HealthBar.o obj\KickParticle.o obj\LaserBeam.o\
-    obj\MenuState.o obj\Particles.o obj\PauseState.o obj\Player.o\
-    obj\PlayingState.o obj\randoms.o obj\SimpleGUI.o obj\SplashState.o\
-    obj\StateMachine.o obj\stateRequests.o obj\WipeTransitionState.o
+    obj\GameClock.o obj\GameDataRef.o obj\HealthBar.o obj\KickParticle.o\
+    obj\LaserBeam.o obj\MenuState.o obj\Particles.o obj\PauseState.o\
+    obj\Player.o obj\PlayingState.o obj\randoms.o obj\SimpleGUI.o\
+    obj\SplashState.o obj\StateMachine.o obj\stateRequests.o\
+    obj\WipeTransitionState.o
 	$(COMPILER) -o "bin\LaserWave.exe"\
     "obj\main.o" "obj\AssetManager.o" "obj\BasicEnemy.o" "obj\constants.o"\
     "obj\Entity.o" "obj\Enemies.o" "obj\EventManager.o" "obj\assets.o"\
-    "obj\Game.o" "obj\GameClock.o" "obj\HealthBar.o" "obj\KickParticle.o"\
-		"obj\Laserbeam.o" "obj\MenuState.o" "obj\Particles.o" "obj\PauseState.o"\
-    "obj\Player.o" "obj\PlayingState.o" "obj\randoms.o" "obj\SimpleGUI.o"\
-    "obj\SplashState.o" "obj\StateMachine.o" "obj\stateRequests.o"\
-    "obj\WipeTransitionState.o"\
+    "obj\Game.o" "obj\GameClock.o" "obj\GameDataRef.o" "obj\HealthBar.o"\
+		"obj\KickParticle.o" "obj\Laserbeam.o" "obj\MenuState.o" "obj\Particles.o"\
+    "obj\PauseState.o" "obj\Player.o" "obj\PlayingState.o" "obj\randoms.o"\
+    "obj\SimpleGUI.o" "obj\SplashState.o" "obj\StateMachine.o"\
+    "obj\stateRequests.o" "obj\WipeTransitionState.o"\
     $(LIBRARY_PATHS) $(LIBRARIES) -Wl,-subsystem,windows
 
 
@@ -67,6 +68,9 @@ obj\Game.o: src\Game.cpp
 
 obj\GameClock.o: src\GameClock.cpp
 	$(MAKE) compile UNIT_NAME=GameClock
+
+obj\GameDataRef.o: src\GameDataRef.cpp
+	$(MAKE) compile UNIT_NAME=GameDataRef
 
 obj\HealthBar.o: src\HealthBar.cpp
 	$(MAKE) compile UNIT_NAME=HealthBar
@@ -163,6 +167,11 @@ src\GameClock.cpp: src\GameClock.hpp
 
 src\GameClock.hpp:
 
+src\GameDataRef.cpp: src\GameDataRef.hpp src\StateMachine.hpp
+	touch src\GameDataRef.cpp
+
+src\GameDataRef.hpp:
+
 src\HealthBar.cpp: src\HealthBar.hpp
 	touch src\HealthBar.cpp
 
@@ -228,6 +237,9 @@ src\SplashState.cpp: src\SplashState.hpp src\GameMaths.hpp src\PlayingState.hpp 
 
 src\SplashState.hpp: src\State.hpp src\constants.hpp
 	touch src\SplashState.hpp
+
+src\State.hpp: src\GameDataRef.hpp
+	touch src\State.hpp
 
 src\StateMachine.cpp: src\StateMachine.hpp src\State.hpp
 	touch src\StateMachine.cpp

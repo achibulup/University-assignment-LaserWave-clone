@@ -14,20 +14,20 @@ EventManager::EventManager(sf::Window *window)
       this->m_events.push_back(tmp);
     for (auto &event : this->m_events) {
       if (event.type == sf::Event::Closed)
-        this->m_events_cache.closed = true;
+        this->m_cache.closed = true;
       if (event.type == sf::Event::LostFocus)
-        this->m_events_cache.lostFocus = true;
+        this->m_cache.lostFocus = true;
     }
 }
 
-std::vector<sf::Event> EventManager::getPendingEvents() const
+List<sf::Event> EventManager::getPendingEvents() const
 {
     return this->m_events;
 }
 
-std::vector<sf::Event::MouseButtonEvent> EventManager::getMouseClicks() const
+List<sf::Event::MouseButtonEvent> EventManager::getMouseClicks() const
 {
-    std::vector<sf::Event::MouseButtonEvent> clicks;
+    List<sf::Event::MouseButtonEvent> clicks;
     for (const auto &event : this->m_events) {
       if (event.type == sf::Event::MouseButtonPressed)
         clicks.push_back(event.mouseButton);
@@ -53,12 +53,12 @@ bool EventManager::isKeyPressed(sf::Keyboard::Key key) const
 
 bool EventManager::isCloseRequested() const
 {
-    return this->m_events_cache.closed;
+    return this->m_cache.closed;
 }
 
 bool EventManager::hasLostFocus() const
 {
-    return this->m_events_cache.lostFocus;
+    return this->m_cache.lostFocus;
 }
 
 } // namespace LaserWave

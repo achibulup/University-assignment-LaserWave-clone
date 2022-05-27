@@ -2,6 +2,7 @@
 #define ENEMIES_HPP_INCLUDED
 
 #include "Enemy.hpp"
+#include <SFML/Achibulup_dependencies/SingleAllocator.hpp>
 #include <memory>
 
 namespace LaserWave
@@ -122,9 +123,9 @@ class Enemies
     void filterDeadEnemies();
 
   private:
-    void addEnemy(std::unique_ptr<Enemy> enemy);
+    void addEnemy(Unique<Enemy> enemy);
 
-    std::vector<std::unique_ptr<Enemy>> m_enemies;
+    List<Unique<Enemy>> m_enemies;
 };
 
 }

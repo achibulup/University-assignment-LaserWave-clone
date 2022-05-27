@@ -21,8 +21,11 @@ PauseState::PauseState(GameDataRef data)
     m_pause_text.setColor(PAUSE_TITLE_COLOR);
 
     const sf::Texture *resume_texture = &this->getAssets().getTexture(RESUME_BUTTON);
+    const sf::Texture *resume_hover_texture = &this->getAssets().getTexture(RESUME_BUTTON_HOVER);
     const sf::Texture *restart_texture = &this->getAssets().getTexture(RESTART_BUTTON);
+    const sf::Texture *restart_hover_texture = &this->getAssets().getTexture(RESTART_BUTTON_HOVER);
     const sf::Texture *menu_texture = &this->getAssets().getTexture(MENU_BUTTON);
+    const sf::Texture *menu_hover_texture = &this->getAssets().getTexture(MENU_BUTTON_HOVER);
 
     sf::Vector2f resume_pos = {
         this->getWindow().getSize().x / 2 - resume_texture->getSize().x / 2,
@@ -39,25 +42,26 @@ PauseState::PauseState(GameDataRef data)
 
     SimpleButton resume_button = makeButton(resume_texture, resume_pos,
         [this]() {
-            this->m_requests.push_back(makePopRequest());
-        }
+            this->addStateRequest(makePopRequest());
+        },
+        resume_hover_texture
     );
     SimpleButton restart_button = makeButton(restart_texture, restart_pos,
         [this]() {
             auto restart_request = makeRequests(
                 makePopPastRequest(PlayingState::ID),
-                makePushRequest<PlayingState>());
-            this->m_requests.push_back(
-                [reqs = std::move(restart_request)] (StateMachine &machine) {
-                    machine.pushState<WipeTransitionState>(std::move(reqs));
-                }
+                makePushRequest<PlayingState>()
             );
-        }
+            this->addStateRequest(makePushRequestV<WipeTransitionState>(
+                std::move(restart_request)));
+        },
+        restart_hover_texture
     );
     SimpleButton menu_button = makeButton(menu_texture, menu_pos,
         [this]() {
-            this->m_requests.push_back(makePopPastRequest(PlayingState::ID));
-        }
+            this->addStateRequest(makePopPastRequest(PlayingState::ID));
+        },
+        menu_hover_texture
     );
 
     this->m_GUI.addButton(std::move(resume_button));
@@ -66,14 +70,13 @@ PauseState::PauseState(GameDataRef data)
 }
 PauseState::~PauseState() = default;
 
-std::vector<StateRequest> PauseState::update(sf::Time dt, EventManager &event)
+void PauseState::update(sf::Time dt, EventManager &event)
 {
     if (this->m_GUI.respondToEvent(event)) {}
     else if (event.isKeyPressed(sf::Keyboard::P) 
           || event.isKeyPressed(sf::Keyboard::Escape)) {
-      this->m_requests.push_back(makePopRequest());
+      this->addStateRequest(makePopRequest());
     }
-    return std::move(this->m_requests);
 }
 
 void PauseState::render() const

@@ -22,7 +22,7 @@ class PauseState : public State
         return ID;
     }
 
-    std::vector<StateRequest> update(sf::Time dt, EventManager &event) override;
+    void update(sf::Time dt, EventManager &event) override;
     void render() const override;
 
     void asTopState() override;
@@ -30,7 +30,6 @@ class PauseState : public State
   private:
     const sf::Cursor *m_cursor;
     SimpleGUI m_GUI;
-    std::vector<StateRequest> m_requests;
     sf::Text m_pause_text;
 };
 

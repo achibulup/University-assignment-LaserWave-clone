@@ -69,8 +69,8 @@ EventManager Game::getEvents()
 void Game::update(sf::Time dt, EventManager &events)
 {
     if (this->m_states.empty()) return;
-    auto requests = this->getActiveState().update(dt, events);
-    this->processChangeRequests(std::move(requests));
+    this->getActiveState().update(dt, events);
+    this->m_states.processRequests();
 }
 
 void Game::updateScreen()
@@ -92,11 +92,7 @@ State& Game::getActiveState()
 
 void Game::processChangeRequests(std::vector<StateRequest> requests)
 {
-    for (auto &request : requests) {
-      this->m_states.processRequest(std::move(request));
-    }
-    if (!requests.empty() && !this->m_states.empty())
-      this->m_states.getTopState().asTopState();
+    this->m_states.processRequests();
 }
 
 } // namespace LaserWave

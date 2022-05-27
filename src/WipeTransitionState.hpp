@@ -18,7 +18,7 @@ class WipeTransitionState : public State
         return ID;
     }
 
-    std::vector<StateRequest> update(sf::Time dt, EventManager&) override;
+    void update(sf::Time dt, EventManager&) override;
     void render() const override;
 
     void asTopState() override;

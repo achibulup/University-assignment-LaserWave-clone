@@ -13,22 +13,20 @@ WipeTransitionState::WipeTransitionState(GameDataRef data,
 : State(data), 
   m_timeleft(sf::seconds(TRANSITION_DURATION + TRANSITION_END_DELAY))
 {
-    m_capture.create(m_data.window->getSize().x, m_data.window->getSize().y);
-    m_capture.update(this->getWindow());
-    m_after_requests.push_back(makePopRequest());
-    m_after_requests.insert(m_after_requests.end(), 
+    this->m_capture.create(this->getWindow().getSize().x, this->getWindow().getSize().y);
+    this->m_capture.update(this->getWindow());
+    this->m_after_requests.push_back(makePopRequest());
+    this->m_after_requests.insert(this->m_after_requests.end(), 
         std::move_iterator(after.begin()), std::move_iterator(after.end()));
 }
 
-std::vector<StateRequest> WipeTransitionState::
-update(sf::Time dt, EventManager&)
+void WipeTransitionState::update(sf::Time dt, EventManager&)
 {
     m_timeleft -= dt;
-    if (m_timeleft <= sf::Time::Zero)
-    {
-        return std::move(m_after_requests);
+    if (m_timeleft <= sf::Time::Zero) {
+      for (auto &request : this->m_after_requests)
+        this->addStateRequest(std::move(request));
     }
-    return {};
 }
 
 void WipeTransitionState::render() const

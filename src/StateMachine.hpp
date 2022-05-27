@@ -34,7 +34,12 @@ class StateMachine
 
     // void pushState(State::Id id);
 
-    void processRequest(StateRequest request);
+    void addRequest(StateRequest request)
+    {
+        this->m_requests.push_back(std::move(request));
+    }
+
+    void processRequests();
 
     State& getTopState()
     {
@@ -58,8 +63,11 @@ class StateMachine
     }
 
   private:
+    void processRequest(StateRequest request);
+
     Achibulup::PolymorphicStack<State> m_states;
     GameDataRef m_data;
+    List<StateRequest> m_requests;
 };
 
 template<typename S, typename ...Args>

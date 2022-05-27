@@ -32,17 +32,19 @@ MenuState::MenuState(GameDataRef data)
 
 
     const sf::Texture *exit_texture = &this->getAssets().getTexture(EXIT_BUTTON);
+    const sf::Texture *exit_hover_texture = &this->getAssets().getTexture(EXIT_BUTTON_HOVER);
     SimpleButton exit_button = makeButton(exit_texture, EXIT_BUTTON_POS,
         [this]() {
-            this->m_requests.push_back(makeClearRequest());
-        }
+            this->addStateRequest(makeClearRequest());
+        },
+        exit_hover_texture
     );
     this->m_GUI.addButton(std::move(exit_button));
 
 }
 MenuState::~MenuState() = default;
  
-std::vector<StateRequest> MenuState::update(sf::Time dt, EventManager &event)
+void MenuState::update(sf::Time dt, EventManager &event)
 { 
     this->m_message_timer += dt;
     this->m_click_to_play_message.setColor(
@@ -51,15 +53,10 @@ std::vector<StateRequest> MenuState::update(sf::Time dt, EventManager &event)
     if (this->m_GUI.respondToEvent(event)) {}
     else if (event.isMouseButtonPressed(sf::Mouse::Left)) {
       auto play_request = makeRequests(makePushRequest<PlayingState>());
-      this->m_requests.push_back(
-          [reqs = std::move(play_request)] 
-          (StateMachine &machine) {
-              machine.pushState<WipeTransitionState>(std::move(reqs));
-          }
-      );
+      this->addStateRequest(makePushRequestV<WipeTransitionState>(
+          std::move(play_request)));
       this->pause();
     }
-    return std::move(this->m_requests);
 }
 
 void MenuState::render() const
@@ -72,7 +69,6 @@ void MenuState::render() const
 
 void MenuState::asTopState()
 {
-    this->resume();
     this->getWindow().setMouseCursor(*this->m_cursor);
     this->getWindow().setMouseCursorVisible(true);
     this->m_message_timer = sf::Time::Zero;

@@ -50,7 +50,7 @@ const sf::Vector2f HEALTH_BAR_POSITION = {60.f, 60.f};
 const sf::Vector2f HEALTH_BAR_UNIT_SIZE = {30.f, 75.f};
 const float HEALTH_BAR_UNIT_SPACING = 20.f;
 
-const float GRAVITY = 300.f;
+const float GRAVITY = 260.f;
 
 const sf::Color PLAYER_COLOR = sf::Color(122, 49, 200);
 const sf::Color PLAYER_INVINCIBLE_COLOR = sf::Color::White;
@@ -59,7 +59,7 @@ const float PLAYER_SPEED = 320.f;
 const float PLAYER_HIT_SPEED = 200.f;
 const float PLAYER_SHOOT_SPEED = 110.f;
 const float PLAYER_MIN_DRAG = 120.f;
-const float PLAYER_MAX_FALL = 170.f;
+const float PLAYER_MAX_FALL = 150.f;
 const int PLAYER_MAX_HEALTH = 5;
 const float PLAYER_INVINCIBILITY_DURATION = 1.f;
 

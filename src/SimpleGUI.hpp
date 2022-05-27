@@ -23,7 +23,7 @@ class SimpleGUI
     void drawTo(sf::RenderWindow &window, sf::RenderStates = {}) const;
 
   private:
-    std::vector<SimpleButton> m_buttons;
+    List<SimpleButton> m_buttons;
 };
 
 } // namespace LaserWave

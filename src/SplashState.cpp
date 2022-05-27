@@ -37,9 +37,8 @@ SplashState::SplashState(GameDataRef data)
 
 SplashState::~SplashState() = default;
 
-std::vector<StateRequest> SplashState::update(sf::Time dt, EventManager &event)
+void SplashState::update(sf::Time dt, EventManager &event)
 {
-    std::vector<StateRequest> requests;
     this->m_phase_time += dt;
     if (event.isMouseButtonPressed(sf::Mouse::Left) 
      && this->m_phase != Phase::QUICK_END)
@@ -81,8 +80,8 @@ std::vector<StateRequest> SplashState::update(sf::Time dt, EventManager &event)
       }break;
       case Phase::END_DELAY: {
         if (this->m_phase_time.asSeconds() >= SPLASH_SCREEN_END_DELAY) {
-          requests.push_back(makePopRequest());
-          requests.push_back(makePushRequest<MenuState>());
+          this->addStateRequest(makePopRequest());
+          this->addStateRequest(makePushRequest<MenuState>());
         }
         else this->m_alpha = 0;
       }break;
@@ -98,7 +97,6 @@ std::vector<StateRequest> SplashState::update(sf::Time dt, EventManager &event)
     }
     this->m_text.setColor(MADEWITH_COLOR * sf::Color(255, 255, 255, this->m_alpha));
     this->m_logo.setColor(sf::Color(255, 255, 255, this->m_alpha));
-    return requests;
 }
 
 void SplashState::render() const

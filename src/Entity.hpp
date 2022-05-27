@@ -1,6 +1,7 @@
 #ifndef ENTITY_HPP_INCLUDED
 #define ENTITY_HPP_INCLUDED
 
+#include "commons.hpp"
 #include <SFML/Graphics.hpp>
 #include <set>
 

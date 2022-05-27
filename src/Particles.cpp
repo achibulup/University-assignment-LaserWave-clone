@@ -41,7 +41,7 @@ void Particles::filterExpiredParticles()
         this->m_particles.erase(this->m_particles.begin() + i);
 }
 
-void Particles::addParticle(std::unique_ptr<Particle> particle)
+void Particles::addParticle(Unique<Particle> particle)
 {
     this->m_particles.push_back(std::move(particle));
 }

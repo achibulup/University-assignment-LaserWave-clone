@@ -35,7 +35,7 @@ class PlayingState : public State
     }
 
     // void init() override;
-    std::vector<StateRequest> update(sf::Time dt, EventManager &event) override;
+    void update(sf::Time dt, EventManager &event) override;
     void render() const override;
 
     void asTopState() override;
@@ -43,7 +43,8 @@ class PlayingState : public State
   private:
     void randomlySpawnEnemy();
     void filterOffScreenEnemies();
-    void gameOver();
+    void checkPlayerCollisions();
+    void playHitSound();
     void action();
     void processInput(sf::Time dt, EventManager &event);
     void requestPause();
@@ -77,12 +78,11 @@ class PlayingState : public State
     sf::Time m_sound_timer = sf::Time::Zero;
     int m_pending_hit_sound = 0;
     sf::Time m_action_timer = sf::Time::Zero;
-    std::vector<DrumNote> m_action_pattern;
+    List<DrumNote> m_action_pattern;
     int m_action_iter = 0;
     sf::Text m_gameover_text;
     sf::Text m_gameover_sub1_text;
     sf::Text m_gameover_sub2_text;
-    std::vector<StateRequest> m_requests;
 };
 
 } // namespace LaserWave

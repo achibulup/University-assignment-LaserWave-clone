@@ -23,7 +23,7 @@ class SplashState : public State
     }
 
     // void init() override;
-    std::vector<StateRequest> update(sf::Time dt, EventManager&) override;
+    void update(sf::Time dt, EventManager&) override;
     void render() const override;
 
   private:

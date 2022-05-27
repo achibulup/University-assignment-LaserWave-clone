@@ -24,10 +24,7 @@ class Game
   private:
     GameDataRef getData()
     {
-        GameDataRef data;
-        data.window = &m_window;
-        data.assets = &m_asset;
-        data.states = &m_states;
+        GameDataRef data{&m_window, &m_asset, &m_states};
         return data;
     }
 

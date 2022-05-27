@@ -1,7 +1,9 @@
 #ifndef EVENTMANAGER_HPP_INCLUDED
 #define EVENTMANAGER_HPP_INCLUDED
 
+#include "commons.hpp"
 #include <SFML/Graphics.hpp>
+
 
 namespace LaserWave
 {
@@ -16,8 +18,8 @@ class EventManager
 
     EventManager(sf::Window *window);
 
-    std::vector<sf::Event> getPendingEvents() const;
-    std::vector<sf::Event::MouseButtonEvent> getMouseClicks() const;
+    List<sf::Event> getPendingEvents() const;
+    List<sf::Event::MouseButtonEvent> getMouseClicks() const;
     bool isMouseButtonPressed(sf::Mouse::Button button) const;
     bool isKeyPressed(sf::Keyboard::Key key) const;
     bool isCloseRequested() const;
@@ -25,12 +27,12 @@ class EventManager
   
   private:
     sf::Window *m_window;
-    std::vector<sf::Event> m_events;
+    List<sf::Event> m_events;
     struct Cache
     {
         bool closed = false;
         bool lostFocus = false;
-    }m_events_cache;
+    }m_cache;
 };
 
 }

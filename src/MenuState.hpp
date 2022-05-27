@@ -22,7 +22,7 @@ class MenuState : public State
         return ID;
     }
 
-    std::vector<StateRequest> update(sf::Time dt, EventManager &event) override;
+    void update(sf::Time dt, EventManager &event) override;
     void render() const override;
 
     void asTopState() override;
@@ -32,7 +32,6 @@ class MenuState : public State
     sf::Text m_click_to_play_message;
     sf::Time m_message_timer = sf::Time::Zero;
     SimpleGUI m_GUI;
-    std::vector<StateRequest> m_requests;
     const sf::Cursor *m_cursor;
 };
 

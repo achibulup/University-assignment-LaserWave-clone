@@ -2,6 +2,8 @@
 #define PARTICLES_HPP_INCLUDED
 
 #include "Particle.hpp"
+#include "commons.hpp"
+#include <SFML/Achibulup_dependencies/SingleAllocator.hpp>
 #include <memory>
 
 namespace LaserWave
@@ -118,12 +120,12 @@ class Particles
     void update(sf::Time dt);
     void drawTo(sf::RenderTarget &target, sf::RenderStates = {}) const;
 
-    void addParticle(std::unique_ptr<Particle> particle);
+    void addParticle(Unique<Particle> particle);
 
     void filterExpiredParticles();
 
   private:
-    std::vector<std::unique_ptr<Particle>> m_particles;
+    List<Unique<Particle>> m_particles;
 };
 
 } // namespace LaserWave
