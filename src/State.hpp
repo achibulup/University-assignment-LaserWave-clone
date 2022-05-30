@@ -18,6 +18,15 @@ class State
     {
       public:
         using std::string_view::string_view;
+
+        friend bool operator == (Id lhs, Id rhs)
+        {
+            return lhs.data() == rhs.data() && lhs.size() == rhs.size();
+        }
+        friend bool operator != (Id lhs, Id rhs)
+        {
+            return !(lhs == rhs);
+        }
     };
 
     explicit State(GameDataRef data) : m_data(data) {}

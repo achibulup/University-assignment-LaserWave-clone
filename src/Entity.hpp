@@ -2,37 +2,12 @@
 #define ENTITY_HPP_INCLUDED
 
 #include "commons.hpp"
+#include "Hitbox.hpp"
 #include <SFML/Graphics.hpp>
 #include <set>
 
 namespace LaserWave
 {
-
-struct EntityPosition
-{
-    sf::Vector2f center;
-    sf::Vector2f size;
-    sf::Vector2f topleft_offset;
-    EntityPosition(sf::Vector2f center = {}, sf::Vector2f size = {}) noexcept
-    : EntityPosition(center, size, size / -2.f) {}
-    EntityPosition(sf::Vector2f center, sf::Vector2f size, sf::Vector2f topleft) noexcept
-    : center(center), size(size), topleft_offset(topleft) {}
-
-    sf::Vector2f getCenter() const noexcept 
-    { 
-        return this->center; 
-    }
-    sf::FloatRect getHitbox() const noexcept
-    {
-        return sf::FloatRect(this->topleft_offset + this->center, this->size);
-    }
-
-    EntityPosition& translate(sf::Vector2f offset) noexcept
-    {
-        this->center += offset;
-        return *this;
-    }
-};
 
 class Entity : public sf::Drawable
 {
@@ -40,8 +15,8 @@ class Entity : public sf::Drawable
     Entity();
     Entity(const Entity&);
     virtual ~Entity();
-    virtual sf::Vector2f getCenter() const = 0;
-    virtual sf::FloatRect getHitbox() const = 0;
+    virtual Point getCenter() const = 0;
+    virtual const Shape& getHitbox() const = 0;
     virtual void update(sf::Time dt) {}
 
     bool isAlive() const noexcept
@@ -59,6 +34,8 @@ class Entity : public sf::Drawable
     void showHitBoxTo(sf::RenderWindow &target) const;
 
   protected:
+    virtual void draw(sf::RenderTarget &target, sf::RenderStates) const override = 0;
+
     bool m_is_alive = true;
 
 };

@@ -21,7 +21,7 @@ class HealthBar : public sf::Drawable
     }
 
   private:
-    void draw(sf::RenderTarget &target, sf::RenderStates = {}) const override;
+    void draw(sf::RenderTarget &target, sf::RenderStates) const override;
 
     int m_health;
 };

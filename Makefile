@@ -16,17 +16,18 @@ COMPILER_FLAGS = -g -std=c++17 -Wall -Wextra -Wpedantic -Wno-unused-function -Wn
 
 bin\LaserWave.exe: \
     obj\main.o obj\AssetManager.o obj\BasicEnemy.o obj\constants.o\
-    obj\Enemies.o obj\Entity.o obj\EventManager.o obj\assets.o obj\Game.o\
-    obj\GameClock.o obj\GameDataRef.o obj\HealthBar.o obj\KickParticle.o\
-    obj\LaserBeam.o obj\MenuState.o obj\Particles.o obj\PauseState.o\
-    obj\Player.o obj\PlayingState.o obj\randoms.o obj\SimpleGUI.o\
-    obj\SplashState.o obj\StateMachine.o obj\stateRequests.o\
-    obj\WipeTransitionState.o
+    obj\ConvexEntity.o obj\Enemies.o obj\Entity.o obj\EventManager.o\
+    obj\assets.o obj\Game.o obj\GameClock.o obj\GameDataRef.o\
+    obj\geometry.o obj\HealthBar.o obj\KickParticle.o obj\LaserBeam.o\
+    obj\MenuState.o obj\Particles.o obj\PauseState.o obj\Player.o\
+    obj\PlayingState.o obj\randoms.o obj\SimpleGUI.o obj\SplashState.o\
+    obj\StateMachine.o obj\stateRequests.o obj\WipeTransitionState.o
 	$(COMPILER) -o "bin\LaserWave.exe"\
     "obj\main.o" "obj\AssetManager.o" "obj\BasicEnemy.o" "obj\constants.o"\
+    "obj\ConvexEntity.o"\
     "obj\Entity.o" "obj\Enemies.o" "obj\EventManager.o" "obj\assets.o"\
-    "obj\Game.o" "obj\GameClock.o" "obj\GameDataRef.o" "obj\HealthBar.o"\
-		"obj\KickParticle.o" "obj\Laserbeam.o" "obj\MenuState.o" "obj\Particles.o"\
+    "obj\Game.o" "obj\GameClock.o" "obj\GameDataRef.o" "obj\geometry.o" "obj\HealthBar.o"\
+    "obj\KickParticle.o" "obj\Laserbeam.o" "obj\MenuState.o" "obj\Particles.o"\
     "obj\PauseState.o" "obj\Player.o" "obj\PlayingState.o" "obj\randoms.o"\
     "obj\SimpleGUI.o" "obj\SplashState.o" "obj\StateMachine.o"\
     "obj\stateRequests.o" "obj\WipeTransitionState.o"\
@@ -51,6 +52,9 @@ obj\BasicEnemy.o: src\BasicEnemy.cpp
 obj\constants.o: src\constants.cpp
 	$(MAKE) compile UNIT_NAME=constants
 
+obj\ConvexEntity.o : src\ConvexEntity.cpp
+	$(MAKE) compile UNIT_NAME=ConvexEntity
+
 obj\Enemies.o: src\Enemies.cpp
 	$(MAKE) compile UNIT_NAME=Enemies
 
@@ -71,6 +75,9 @@ obj\GameClock.o: src\GameClock.cpp
 
 obj\GameDataRef.o: src\GameDataRef.cpp
 	$(MAKE) compile UNIT_NAME=GameDataRef
+
+obj\geometry.o : src\geometry.cpp
+	$(MAKE) compile UNIT_NAME=geometry
 
 obj\HealthBar.o: src\HealthBar.cpp
 	$(MAKE) compile UNIT_NAME=HealthBar
@@ -118,7 +125,7 @@ obj\WipeTransitionState.o: src\WipeTransitionState.cpp
 src\main.cpp: src\Game.hpp
 	touch src\main.cpp
 
-src\AssetManager.cpp: src\AssetManager.hpp
+src\AssetManager.cpp: src\AssetManager.hpp src\commons.hpp
 	touch src\AssetManager.cpp
 
 src\AssetManager.hpp:
@@ -126,13 +133,22 @@ src\AssetManager.hpp:
 src\BasicEnemy.cpp: src\BasicEnemy.hpp
 	touch src\BasicEnemy.cpp
 
-src\BasicEnemy.hpp: src\Enemy.hpp src\GameMaths.hpp
+src\BasicEnemy.hpp: src\Enemy.hpp src\GameMaths.hpp src\ConvexEntity.hpp
 	touch src\BasicEnemy.hpp
 
 src\constants.cpp: src\constants.hpp
 	touch src\constants.cpp
 
 src\constants.hpp:
+
+src\ConvexEntity.cpp: src\ConvexEntity.hpp
+	touch src\ConvexEntity.cpp
+
+src\ConvexEntity.hpp: src\Entity.hpp
+	touch src\ConvexEntity.hpp
+
+src\Enemy.hpp: src\Entity.hpp
+	touch src\Enemy.hpp
 
 src\Enemies.cpp: src\Enemies.hpp src\GameMaths.hpp src\BasicEnemy.hpp
 	touch src\Enemies.cpp
@@ -143,12 +159,14 @@ src\Enemies.hpp: src\Enemy.hpp
 src\Entity.cpp: src\Entity.hpp
 	touch src\Entity.cpp
 
-src\Entity.hpp:
+src\Entity.hpp: src\commons.hpp
+	touch src\Entity.hpp
 
 src\EventManager.cpp: src\EventManager.hpp
 	touch src\EventManager.cpp
 
-src\EventManager.hpp:
+src\EventManager.hpp: src\commons.hpp
+	touch src\EventManager.hpp
 
 src\assets.cpp: src\assets.hpp
 	touch src\assets.cpp
@@ -172,10 +190,19 @@ src\GameDataRef.cpp: src\GameDataRef.hpp src\StateMachine.hpp
 
 src\GameDataRef.hpp:
 
+src\geometry.cpp: src\geometry.hpp src\GameMaths.hpp
+	touch src\geometry.cpp
+
+src\getmetry.hpp: commons.hpp
+	touch src\geometry.hpp
+
 src\HealthBar.cpp: src\HealthBar.hpp
 	touch src\HealthBar.cpp
 
 src\HealthBar.hpp:
+
+src\Hitbox.hpp: src\geometry.hpp
+	touch src\Hitbox.hpp
 
 src\KickParticle.cpp: src\KickParticle.hpp
 	touch src\KickParticle.cpp
@@ -198,7 +225,7 @@ src\MenuState.hpp: src\State.hpp src\SimpleGUI.hpp
 src\Particles.cpp: src\Particles.hpp src\GameMaths.hpp
 	touch src\Particles.cpp
 
-src\Particles.hpp: src\Particle.hpp
+src\Particles.hpp: src\Particle.hpp src\commons.hpp
 	touch src\Particles.hpp
 
 src\PauseState.cpp: src\PauseState.hpp src\WipeTransitionState.hpp src\stateRequests.hpp
@@ -210,7 +237,7 @@ src\PauseState.hpp: src\State.hpp src\SimpleGUI.hpp
 src\Player.cpp: src\Player.hpp src\GameMaths.hpp 
 	touch src\Player.cpp
 
-src\Player.hpp: src\Entity.hpp src\AssetManager.hpp
+src\Player.hpp: src\ConvexEntity.hpp src\AssetManager.hpp
 	touch src\Player.hpp
 
 src\PlayingState.cpp: src\PlayingState.hpp src\GameMaths.hpp src\constants.hpp\
@@ -238,7 +265,7 @@ src\SplashState.cpp: src\SplashState.hpp src\GameMaths.hpp src\PlayingState.hpp 
 src\SplashState.hpp: src\State.hpp src\constants.hpp
 	touch src\SplashState.hpp
 
-src\State.hpp: src\GameDataRef.hpp
+src\State.hpp: src\GameDataRef.hpp src\commons.hpp
 	touch src\State.hpp
 
 src\StateMachine.cpp: src\StateMachine.hpp src\State.hpp

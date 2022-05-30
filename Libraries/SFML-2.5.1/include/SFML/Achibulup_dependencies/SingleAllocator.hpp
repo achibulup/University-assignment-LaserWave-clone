@@ -175,8 +175,11 @@ class SAUniquePtr
 
     void reset() noexcept
     {
-        this->m_manager.release();
-        this->m_ptr = nullptr;
+        if (*this) {
+          this->m_manager.release();
+          std::destroy_at(this->m_ptr);
+          this->m_ptr = nullptr;
+        }
     }
 
     constexpr Tp* get() const noexcept

@@ -39,7 +39,7 @@ void Enemies::addRandomEnemy(sf::Vector2f position, sf::Vector2f player_pos)
 {
     sf::Vector2f direction = normalize(player_pos - position);
     sf::Vector2f velocity = direction * BASIC_ENEMY_SPEED;
-    this->addEnemy(Achibulup::makeSAUnique<BasicEnemy>(position, velocity));
+    this->addEnemy(makeUnique<BasicEnemy>(position, velocity));
 }
 
 void Enemies::filterDeadEnemies()

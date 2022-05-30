@@ -16,7 +16,7 @@ class KickParticle : public Particle
     void update(sf::Time dt) override;
 
   private:
-    void draw(sf::RenderTarget& target, sf::RenderStates = {}) const override;
+    void draw(sf::RenderTarget& target, sf::RenderStates) const override;
 
     sf::Time m_timeleft = sf::seconds(KICK_PARTICLE_LIFETIME);
     sf::Sprite m_sprite;

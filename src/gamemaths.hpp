@@ -33,9 +33,10 @@ inline int round(float x)
     return std::round(x);
 }
 
+inline const float PI = 3.14159265358979323846f;
+
 class Angle
 {
-    inline static const float PI = 3.14159265358979323846f;
     inline static const float FULL_CYCLE = 360;
 
   public:
@@ -52,6 +53,11 @@ class Angle
         Angle res;
         res.m_degrees = radianstoDegrees(radians);
         return res;
+    }
+
+    static Angle fullCycle() noexcept
+    {
+        return Angle::fromDegrees(FULL_CYCLE);
     }
     
     float asRadians() const noexcept 
@@ -112,13 +118,13 @@ class Angle
     {
         return degrees * PI / 180.f;
     }
-    static float normalize(float radians) noexcept
-    {
-        radians = fmod(radians, FULL_CYCLE);
-        if (radians < 0.f)
-          radians += FULL_CYCLE;
-        return radians;
-    }
+    // static float normalize(float radians) noexcept
+    // {
+    //     radians = fmod(radians, FULL_CYCLE);
+    //     if (radians < 0.f)
+    //       radians += FULL_CYCLE;
+    //     return radians;
+    // }
 
     float m_degrees;
 };

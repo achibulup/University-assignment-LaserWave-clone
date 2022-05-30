@@ -85,7 +85,7 @@ extern const float ENEMY_FREEZE_TIME;
 extern const sf::Color ENEMY_HIT_COLOR;
 
 extern const sf::Color BASIC_ENEMY_COLOR;
-extern const sf::Vector2f BASIC_ENEMY_SIZE;
+extern const float BASIC_ENEMY_RADIUS;
 extern const float BASIC_ENEMY_SPEED;
 extern const Angle BASIC_ENEMY_MAX_ROTATION_SPEED;
 extern const Angle BASIC_ENEMY_MIN_ROTATION_SPEED;

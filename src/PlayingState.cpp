@@ -71,6 +71,8 @@ void PlayingState::update(sf::Time dt, EventManager &event)
       this->randomlySpawnEnemy();
       this->filterOffScreenEnemies();
 
+      this->m_enemies.filterDeadEnemies();
+
       this->checkPlayerCollisions();
 
       this->playHitSound();
@@ -206,7 +208,6 @@ void PlayingState::filterOffScreenEnemies()
       if (this->isFiltered(enemy))
         kill(enemy);
     }
-    this->m_enemies.filterDeadEnemies();
 }
 
 void PlayingState::randomlySpawnEnemy()
@@ -238,7 +239,7 @@ void PlayingState::playerShoot(sf::Vector2f direction)
     auto laser_end = this->findLaserEndPoint(laser_start_pos, direction);
     if (laser_end.hitEnemy) 
       const_cast<Enemy&>(*laser_end.hitEnemy).getHit();
-    this->m_particles.addParticle(Achibulup::makeSAUnique<LaserBeam>(
+    this->m_particles.addParticle(makeUnique<LaserBeam>(
         laser_start_pos, laser_end.position));
     this->m_shoot_sound.play();
     this->m_sound_timer = sf::Time::Zero;
@@ -247,7 +248,7 @@ void PlayingState::playerShoot(sf::Vector2f direction)
 void PlayingState::playerKick(sf::Vector2f direction)
 {
     this->m_player.kick(direction);
-    this->m_particles.addParticle(Achibulup::makeSAUnique<KickParticle>(
+    this->m_particles.addParticle(makeUnique<KickParticle>(
         this->m_player.getCenter(), toAngle(direction), 
         &this->getAssets().getTexture(KICK_PARTICLE_IMAGE)));
     this->m_kick_sound.play();
@@ -263,46 +264,42 @@ void PlayingState::playerGetHit(sf::Vector2f direction)
 LaserEndPoint PlayingState::
 findLaserEndPoint(sf::Vector2f position, sf::Vector2f direction) const
 {
-    auto getHitEnemy = [&] (sf::FloatRect laser_front) {
+    using LaserFront = SymetricHitboxConvex<4>;
+    auto getHitEnemy = [&] (const LaserFront &laser_front) {
       for (const Enemy &enemy : this->m_enemies) {
-        if (laser_front.intersects(enemy.getHitbox()))
+        if (intersects(laser_front, enemy.getHitbox()))
           return &enemy;
       }
       return static_cast<const Enemy*>(nullptr);
     };
     auto calcLaserFrontSize = [] (sf::Vector2f direction, float laser_width) {
-        return sf::Vector2f{laser_width * 1.17f, laser_width * 1.17f};
+        return laser_width / 2;
     };
-    auto getCenter = [] (sf::FloatRect rect) {
-        return sf::Vector2f{rect.left + rect.width / 2.f, rect.top + rect.height / 2.f};
-    };
-    auto outOfScreen = [&] (sf::FloatRect rect) {
+    auto outOfScreen = [&] (const LaserFront &laser_front) {
       const float TOP_Y = -ENEMY_FILTER_MARGIN.y;
       const float BOTTOM_Y = this->getWindow().getSize().y + ENEMY_SPAWN_MARGIN.y;
       const float LEFT_X = -ENEMY_FILTER_MARGIN.x;
       const float RIGHT_X = this->getWindow().getSize().x + ENEMY_FILTER_MARGIN.x;
-      auto center = getCenter(rect);
+      auto center = laser_front.getCenter();
       return center.x < LEFT_X
           || center.x > RIGHT_X
           || center.y < TOP_Y
           || center.y > BOTTOM_Y;
     };
-    sf::FloatRect laser_front;
-    sf::Vector2f front_size = calcLaserFrontSize(direction, LASER_WIDTH);
-    laser_front.left = position.x - front_size.x / 2.f;
-    laser_front.top = position.y - front_size.y / 2.f;
-    laser_front.width = front_size.x;
-    laser_front.height = front_size.y;
+    LaserFront laser_front;
+    float front_size = calcLaserFrontSize(direction, LASER_WIDTH);
+    laser_front.setRadius(front_size * 1.4f);
+    laser_front.setCenter(position);
+    laser_front.setAngle(toAngle(direction) + Angle::fromDegrees(45));
 
     while (!outOfScreen(laser_front)) {
       auto *enemy = getHitEnemy(laser_front);
-      laser_front.left += direction.x;
-      laser_front.top += direction.y;
+      laser_front.translate(direction * 6.f);
       if (enemy)
-        return LaserEndPoint{getCenter(laser_front) + 14.f * direction, enemy};
+        return LaserEndPoint{laser_front.getCenter() + 14.f * direction, enemy};
     }
 
-    return {getCenter(laser_front), nullptr};
+    return {laser_front.getCenter(), nullptr};
 }
 
 bool PlayingState::isFiltered(const Entity &entity) const
@@ -358,16 +355,25 @@ sf::Vector2f PlayingState::checkPlayerTouchEdge()
     const float BOTTOM_Y = this->getWindow().getSize().y - 10;
     const float LEFT_X = 10;
     const float RIGHT_X = this->getWindow().getSize().x - 10;
-    sf::FloatRect player_hitbox = this->m_player.getHitbox();
+    auto &&player_hitbox = this->m_player.getHitbox();
+    
+    int vertices = player_hitbox.vertexCount();
+    bool touch_top = false;
+    bool touch_bottom = false;
+    bool touch_left = false;
+    bool touch_right = false;
+    for (int i = 0; i < vertices; ++i) {
+      auto &&vertex = player_hitbox.getVertex(i);
+      touch_left |= vertex.x < LEFT_X;
+      touch_right |= vertex.x > RIGHT_X;
+      touch_top |= vertex.y < TOP_Y;
+      touch_bottom |= vertex.y > BOTTOM_Y;
+    }
     sf::Vector2f direction = {0, 0};
-    if (player_hitbox.left < LEFT_X) 
-      direction += {1.0, 0.0};
-    if (player_hitbox.left + player_hitbox.width > RIGHT_X) 
-      direction += {-1.0, 0.0};
-    if (player_hitbox.top < TOP_Y) 
-      direction += {0.0, 1.0};
-    if (player_hitbox.top + player_hitbox.height > BOTTOM_Y) 
-      direction += {0.0, -1.0};
+    if (touch_left) direction += {1.f, 0.f};
+    if (touch_right) direction += {-1.f, 0.f};
+    if (touch_top) direction += {0.f, 1.f};
+    if (touch_bottom) direction += {0.f, -1.f};
     if (direction != sf::Vector2f{0, 0}) return normalize(direction);
     return direction;
 }

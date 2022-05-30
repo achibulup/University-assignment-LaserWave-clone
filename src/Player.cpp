@@ -6,53 +6,37 @@ namespace LaserWave
 {
 
 Player::Player(sf::Vector2f center)
-: m_pos(center, PLAYER_SIZE) {}
-
-sf::Vector2f Player::getCenter() const
+: m_hitbox(center)
 {
-    return this->m_pos.getCenter();
+    m_hitbox.setLocalVertex(0, {0.f, -PLAYER_SIZE.y / 2});
+    m_hitbox.setLocalVertex(1, {PLAYER_SIZE.x / 2, 0.f});
+    m_hitbox.setLocalVertex(2, {0.f, PLAYER_SIZE.y / 2});
+    m_hitbox.setLocalVertex(3, {-PLAYER_SIZE.x / 2, 0.f});
 }
 
-sf::FloatRect Player::getHitbox() const
+Point Player::getCenter() const
 {
-    return this->m_pos.getHitbox();
+    return this->m_hitbox.getCenter();
+}
+
+const Player::Hitbox& Player::getHitbox() const
+{
+    return this->m_hitbox;
+}
+
+sf::Color Player::getColor() const noexcept
+{
+    return PLAYER_COLOR;
 }
 
 void Player::update(sf::Time dt)
 {
-    this->m_pos.translate(dt.asSeconds() * this->m_velocity);
+    this->m_hitbox.translate(dt.asSeconds() * this->m_velocity);
     this->applyAcceleration(dt);
     if (this->isInvincible()) {
       this->m_invincibility_timer 
           = std::max(this->m_invincibility_timer - dt, sf::Time::Zero);
     }
-}
-
-void Player::draw(sf::RenderTarget &target, sf::RenderStates states) const
-{
-    /// draw a diamond shape from two triangles
-    sf::Vector2f points[4] = {
-        this->m_pos.getCenter() + sf::Vector2f(0, -32.f),
-        this->m_pos.getCenter() + sf::Vector2f(20.f, 0),
-        this->m_pos.getCenter() + sf::Vector2f(0, 32.f),
-        this->m_pos.getCenter() + sf::Vector2f(-20.f, 0)
-    };
-    sf::ConvexShape shape(4);
-    shape.setPoint(0, points[0]);
-    shape.setPoint(1, points[1]);
-    shape.setPoint(2, points[2]);
-    shape.setPoint(3, points[3]);
-    
-    float invincibility_interpolation = this->m_invincibility_timer.asSeconds()
-                                      / PLAYER_INVINCIBILITY_DURATION;
-    float color_interpolation = std::cbrt(sqr((invincibility_interpolation)));
-    sf::Color color = {
-      PLAYER_COLOR.r + (PLAYER_INVINCIBLE_COLOR.r - PLAYER_COLOR.r) * color_interpolation,
-      PLAYER_COLOR.g + (PLAYER_INVINCIBLE_COLOR.g - PLAYER_COLOR.g) * color_interpolation,
-      PLAYER_COLOR.b + (PLAYER_INVINCIBLE_COLOR.b - PLAYER_COLOR.b) * color_interpolation
-    };
-    shape.setFillColor(color);
-    target.draw(shape, states);
 }
 
 bool Player::isInvincible() const

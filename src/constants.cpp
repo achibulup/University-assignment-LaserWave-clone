@@ -54,7 +54,7 @@ const float GRAVITY = 260.f;
 
 const sf::Color PLAYER_COLOR = sf::Color(122, 49, 200);
 const sf::Color PLAYER_INVINCIBLE_COLOR = sf::Color::White;
-const sf::Vector2f PLAYER_SIZE = {32, 43};
+const sf::Vector2f PLAYER_SIZE = {40, 64};
 const float PLAYER_SPEED = 320.f;
 const float PLAYER_HIT_SPEED = 200.f;
 const float PLAYER_SHOOT_SPEED = 110.f;
@@ -79,7 +79,7 @@ const sf::Color ENEMY_HIT_COLOR = sf::Color::White;
 const float ENEMY_SPAWN_INTERVAL = 0.75f;
 
 const sf::Color BASIC_ENEMY_COLOR = sf::Color(80, 110, 150);
-const sf::Vector2f BASIC_ENEMY_SIZE = {70, 70};
+const float BASIC_ENEMY_RADIUS = 50.f;
 const float BASIC_ENEMY_SPEED = 150.f;
 const Angle BASIC_ENEMY_MAX_ROTATION_SPEED = Angle::fromDegrees(30.f);
 const Angle BASIC_ENEMY_MIN_ROTATION_SPEED = Angle::fromDegrees(5.f);

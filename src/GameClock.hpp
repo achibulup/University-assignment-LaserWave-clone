@@ -15,7 +15,7 @@ class GameClock : public sf::Drawable
 
     /// add the timer by 1 frame (1/60 seconds)
     void add1Tick();
-    void draw(sf::RenderTarget &target, sf::RenderStates = {}) const override;
+    void draw(sf::RenderTarget &target, sf::RenderStates) const override;
 
   private:
     sf::String toDisplayString() const;
