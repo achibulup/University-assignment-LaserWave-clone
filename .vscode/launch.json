@@ -16,7 +16,7 @@
       "externalConsole": true,
       "MIMode": "gdb",
       "miDebuggerPath": "D:\\CODE\\compilers\\mingw64\\bin\\gdb.exe",
-      "visualizerFile": "${fileDirname}\\visualizers\\vis.natvis",
+      "visualizerFile": "${workspaceFolder}\\.vscode\\visualizers\\vis.natvis",
       "showDisplayString": true,
       "setupCommands": [
         {

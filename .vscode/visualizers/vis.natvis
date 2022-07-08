@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="std::array&lt;*,*&gt;">
+    <DisplayString>[{$T2}]</DisplayString>
+    <Expand>
+      <ExpandedItem>_M_elems</ExpandedItem>
+    </Expand>
+  </Type>
+  <Type Name="std::initializer_list&lt;*&gt;">
+    <DisplayString>[{_M_len}]</DisplayString>
+    <Expand>
+      <ArrayItems>
+        <Size>_M_len</Size>
+        <ValuePointer>_M_array</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+  <Type Name="std::span&lt;*,*&gt;">
+    <DisplayString Condition="$T2 != -sizeof(char)">[{$T2}]</DisplayString>
+    <DisplayString Condition="$T2 == -sizeof(char)">[{_M_extent._M_extent_value}]</DisplayString>
+    <Expand>
+      <ArrayItems Condition="$T2 != -sizeof(char)">
+        <Size>$T2</Size>
+        <ValuePointer>_M_ptr</ValuePointer>
+      </ArrayItems>
+      <ArrayItems Condition="$T2 == -sizeof(char)">
+        <Size>_M_extent._M_extent_value</Size>
+        <ValuePointer>_M_ptr</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+  <Type Name="LaserWave::IdTemplate&lt;*&gt;">
+    <DisplayString>{m_str}</DisplayString>
+  </Type>
+  <Type Name="LaserWave::State">
+    <DisplayString Condition="m_paused == false">{m_id.m_str}</DisplayString>
+    <DisplayString Condition="m_paused == true">{m_id.m_str} (paused)</DisplayString>
+  </Type>
+  <Type Name="LaserWave::Entity">
+    <DisplayString Condition="m_isAlive == true">{m_id.m_str}</DisplayString>
+    <DisplayString Condition="m_isAlive == false">{m_id.m_str} (dead)</DisplayString>
+  </Type>
+  <Type Name="LaserWave::Shape">
+    <DisplayString>{m_id.m_str}</DisplayString>
+  </Type>
+
+</AutoVisualizer>
