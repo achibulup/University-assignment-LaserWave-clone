@@ -9,6 +9,10 @@ EventManager::~EventManager() = default;
 EventManager::EventManager(sf::Window *window)
 : m_window(window)
 {
+    if (!window->hasFocus()) {
+      this->m_events.push_back({sf::Event::LostFocus});
+      this->m_cache.lostFocus = true;
+    }
     sf::Event tmp;
     while (this->m_window->pollEvent(tmp))
       this->m_events.push_back(tmp);
@@ -17,6 +21,8 @@ EventManager::EventManager(sf::Window *window)
         this->m_cache.closed = true;
       if (event.type == sf::Event::LostFocus)
         this->m_cache.lostFocus = true;
+      if (event.type == sf::Event::GainedFocus)
+        this->m_cache.lostFocus = false;
     }
 }
 

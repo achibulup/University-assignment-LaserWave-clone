@@ -4,28 +4,28 @@
 namespace LaserWave
 {
 
-const std::string MADEWITH_FONT = "MADEWITH-FONT";
-const std::string SFML_LOGO = "SFML-LOGO";
-const std::string TITLE_FONT = "TITLE-FONT";
-const std::string BUTTON_IMAGE = "BUTTON-IMAGE";
-const std::string GAMECLOCK_FONT = "GAMECLOCK-FONT";
-const std::string CLICK_FONT = "CLICK-FONT";
-const std::string DEFAULT_CURSOR = "DEFAULT-CURSOR";
-const std::string PLAYING_CURSOR = "PLAYING-CURSOR";
-const std::string KICK_PARTICLE_IMAGE = "KICK-PARTICLE-IMAGE";
-const std::string SHOOT_SOUND = "SHOOT-SOUND";
-const std::string KICK_SOUND = "KICK-SOUND";
-const std::string HIT_SOUND = "HIT-SOUND";
-const std::string EXIT_BUTTON = "EXIT-BUTTON";
-const std::string EXIT_BUTTON_HOVER = "EXIT-BUTTON-HOVER";
-const std::string PAUSE_FONT = "PAUSE-FONT";
-const std::string RESUME_BUTTON = "RESUME-BUTTON";
-const std::string RESUME_BUTTON_HOVER = "RESUME-BUTTON-HOVER";
-const std::string RESTART_BUTTON = "RESTART-BUTTON";
-const std::string RESTART_BUTTON_HOVER = "RESTART-BUTTON-HOVER";
-const std::string MENU_BUTTON = "MENU-BUTTON";
-const std::string MENU_BUTTON_HOVER = "MENU-BUTTON-HOVER";
-const std::string GAMEOVER_FONT = "GAMEOVER-FONT";
+const AssetId MADEWITH_FONT ("MADEWITH-FONT");
+const AssetId SFML_LOGO ("SFML-LOGO");
+const AssetId TITLE_FONT ("TITLE-FONT");
+const AssetId BUTTON_IMAGE ("BUTTON-IMAGE");
+const AssetId GAMECLOCK_FONT ("GAMECLOCK-FONT");
+const AssetId CLICK_FONT ("CLICK-FONT");
+const AssetId DEFAULT_CURSOR ("DEFAULT-CURSOR");
+const AssetId PLAYING_CURSOR ("PLAYING-CURSOR");
+const AssetId KICK_PARTICLE_IMAGE ("KICK-PARTICLE-IMAGE");
+const AssetId SHOOT_SOUND ("SHOOT-SOUND");
+const AssetId KICK_SOUND ("KICK-SOUND");
+const AssetId HIT_SOUND ("HIT-SOUND");
+const AssetId EXIT_BUTTON ("EXIT-BUTTON");
+const AssetId EXIT_BUTTON_HOVER ("EXIT-BUTTON-HOVER");
+const AssetId PAUSE_FONT ("PAUSE-FONT");
+const AssetId RESUME_BUTTON ("RESUME-BUTTON");
+const AssetId RESUME_BUTTON_HOVER ("RESUME-BUTTON-HOVER");
+const AssetId RESTART_BUTTON ("RESTART-BUTTON");
+const AssetId RESTART_BUTTON_HOVER ("RESTART-BUTTON-HOVER");
+const AssetId MENU_BUTTON ("MENU-BUTTON");
+const AssetId MENU_BUTTON_HOVER ("MENU-BUTTON-HOVER");
+const AssetId GAMEOVER_FONT ("GAMEOVER-FONT");
 
 const char *const ICON_PATH = "assets/images/SFML-icon.png";
 
@@ -79,56 +79,56 @@ SimpleButton makeButton(const sf::Texture *texture, sf::Vector2f pos,
     return button;
 }
 
-const std::vector<DrumNote> PATTERN = {
-  {DrumNote::KICK, 0.4f},
-  {DrumNote::KICK, 0.65f},
-  {DrumNote::SNARE, 0.2f},
-  {DrumNote::KICK, 1.3f},
-  {DrumNote::SNARE, 0.4f},
-  {DrumNote::KICK, 0.9f},
-  {DrumNote::KICK, 0.65f},
-  {DrumNote::SNARE, 0.2f},
-  {DrumNote::KICK, 1.3f},
-  {DrumNote::SNARE, 0.4f},
-  {DrumNote::KICK, 0.9f},
-  {DrumNote::KICK, 0.65f},
-  {DrumNote::SNARE, 0.2f},
-  {DrumNote::KICK, 1.3f},
-  {DrumNote::SNARE, 0.4f},
-  {DrumNote::KICK, 0.8f},
-  {DrumNote::KICK, 0.2f},
-  {DrumNote::KICK, 0.2f},
-  {DrumNote::SNARE, 0.4f},
-  {DrumNote::KICK, 0.6f},
-  {DrumNote::KICK, 0.4f},
-  {DrumNote::KICK, 0.2f},
-  {DrumNote::SNARE, 0.4f},
-  {DrumNote::KICK, 0.8f},
-  {DrumNote::KICK, 0.65f},
-  {DrumNote::SNARE, 0.2f},
-  {DrumNote::KICK, 1.3f},
-  {DrumNote::SNARE, 0.4f},
-  {DrumNote::KICK, 0.9f},
-  {DrumNote::KICK, 0.65f},
-  {DrumNote::SNARE, 0.2f},
-  {DrumNote::KICK, 1.3f},
-  {DrumNote::SNARE, 0.4f},
-  {DrumNote::KICK, 0.9f},
-  {DrumNote::KICK, 0.65f},
-  {DrumNote::SNARE, 0.2f},
-  {DrumNote::KICK, 1.3f},
-  {DrumNote::SNARE, 0.4f},
-  {DrumNote::KICK, 0.8f},
-  {DrumNote::KICK, 0.2f},
-  {DrumNote::KICK, 0.2f},
-  {DrumNote::SNARE, 0.4f},
-  {DrumNote::SNARE, 0.4f},
-  {DrumNote::KICK, 0.2f},
-  {DrumNote::KICK, 0.4f},
-  {DrumNote::KICK, 0.4f},
-  {DrumNote::SNARE, 0.2f},
-  {DrumNote::SNARE, 0.2f},
-  {DrumNote::SNARE, 0.2f},
+const List<DrumNote> PATTERN = {
+  {PlayerAction::KICK, 0.4f},
+  {PlayerAction::KICK, 0.65f},
+  {PlayerAction::SHOOT, 0.2f},
+  {PlayerAction::KICK, 1.3f},
+  {PlayerAction::SHOOT, 0.4f},
+  {PlayerAction::KICK, 0.9f},
+  {PlayerAction::KICK, 0.65f},
+  {PlayerAction::SHOOT, 0.2f},
+  {PlayerAction::KICK, 1.3f},
+  {PlayerAction::SHOOT, 0.4f},
+  {PlayerAction::KICK, 0.9f},
+  {PlayerAction::KICK, 0.65f},
+  {PlayerAction::SHOOT, 0.2f},
+  {PlayerAction::KICK, 1.3f},
+  {PlayerAction::SHOOT, 0.4f},
+  {PlayerAction::KICK, 0.8f},
+  {PlayerAction::KICK, 0.2f},
+  {PlayerAction::KICK, 0.2f},
+  {PlayerAction::SHOOT, 0.4f},
+  {PlayerAction::KICK, 0.6f},
+  {PlayerAction::KICK, 0.4f},
+  {PlayerAction::KICK, 0.2f},
+  {PlayerAction::SHOOT, 0.4f},
+  {PlayerAction::KICK, 0.8f},
+  {PlayerAction::KICK, 0.65f},
+  {PlayerAction::SHOOT, 0.2f},
+  {PlayerAction::KICK, 1.3f},
+  {PlayerAction::SHOOT, 0.4f},
+  {PlayerAction::KICK, 0.9f},
+  {PlayerAction::KICK, 0.65f},
+  {PlayerAction::SHOOT, 0.2f},
+  {PlayerAction::KICK, 1.3f},
+  {PlayerAction::SHOOT, 0.4f},
+  {PlayerAction::KICK, 0.9f},
+  {PlayerAction::KICK, 0.65f},
+  {PlayerAction::SHOOT, 0.2f},
+  {PlayerAction::KICK, 1.3f},
+  {PlayerAction::SHOOT, 0.4f},
+  {PlayerAction::KICK, 0.8f},
+  {PlayerAction::KICK, 0.2f},
+  {PlayerAction::KICK, 0.2f},
+  {PlayerAction::SHOOT, 0.4f},
+  {PlayerAction::SHOOT, 0.4f},
+  {PlayerAction::KICK, 0.2f},
+  {PlayerAction::KICK, 0.4f},
+  {PlayerAction::KICK, 0.4f},
+  {PlayerAction::SHOOT, 0.2f},
+  {PlayerAction::SHOOT, 0.2f},
+  {PlayerAction::SHOOT, 0.2f},
 };
 
 } // namespace LaserWave

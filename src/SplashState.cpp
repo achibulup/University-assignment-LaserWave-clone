@@ -10,7 +10,7 @@
 namespace LaserWave
 {
 
-const State::Id SplashState::ID = "Splash";
+const State::Id SplashState::ID("Splash");
 
 SplashState::SplashState(GameDataRef data)
 : State(data),
@@ -30,7 +30,7 @@ SplashState::SplashState(GameDataRef data)
         m_text.getLocalBounds().height
     };
     this->m_text.setPosition(this->m_logo.getPosition().x, MADEWITH_Y);
-    this->m_text.setColor(sf::Color(255, 255, 255, 0));
+    this->m_text.setFillColor(sf::Color(255, 255, 255, 0));
     
     this->getWindow().setMouseCursorVisible(false);
 }
@@ -95,7 +95,7 @@ void SplashState::update(sf::Time dt, EventManager &event)
         }
       }break;
     }
-    this->m_text.setColor(MADEWITH_COLOR * sf::Color(255, 255, 255, this->m_alpha));
+    this->m_text.setFillColor(MADEWITH_COLOR * sf::Color(255, 255, 255, this->m_alpha));
     this->m_logo.setColor(sf::Color(255, 255, 255, this->m_alpha));
 }
 

@@ -229,8 +229,6 @@ class BufferedLIFOMemResource : public LIFOMemoryResource
     BufferedLIFOMemResource(const BufferedLIFOMemResource&) = delete;
     void operator=(const BufferedLIFOMemResource&) = delete;
     void swap(BufferedLIFOMemResource&) noexcept = delete;
-    friend void swap(BufferedLIFOMemResource&, 
-                     BufferedLIFOMemResource&) = delete;
 
     BufferedLIFOMemResource(float growth_factor) noexcept
     : BufferedLIFOMemResource()
@@ -241,6 +239,10 @@ class BufferedLIFOMemResource : public LIFOMemoryResource
   protected:
     Byte m_buffer[BUFFERSIZE] alignas(alignof(std::max_align_t));
 };
+
+template<std::size_t BUFFERSIZE1, std::size_t BUFFERSIZE2>
+void swap(BufferedLIFOMemResource<BUFFERSIZE1>&,
+          BufferedLIFOMemResource<BUFFERSIZE2>&) = delete;
 
 }
 

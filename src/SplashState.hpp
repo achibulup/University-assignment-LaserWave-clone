@@ -7,7 +7,7 @@
 namespace LaserWave
 {
 
-class SplashState : public State
+class SplashState : public State INIT_DEBUG_ID(SplashState)
 {
   public:
     static const State::Id ID;
@@ -17,7 +17,7 @@ class SplashState : public State
     void operator = (SplashState) = delete;
     ~SplashState();
 
-    State::Id getId() const override
+    State::Id getId() const noexcept override
     {
         return ID;
     }

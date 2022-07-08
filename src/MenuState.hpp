@@ -7,7 +7,7 @@
 namespace LaserWave
 {
 
-class MenuState : public State
+class MenuState : public State INIT_DEBUG_ID(MenuState)
 {
   public:
     static const State::Id ID;
@@ -17,7 +17,7 @@ class MenuState : public State
     void operator = (MenuState) = delete;
     ~MenuState();
 
-    virtual State::Id getId() const override
+    virtual State::Id getId() const noexcept override
     {
         return ID;
     }

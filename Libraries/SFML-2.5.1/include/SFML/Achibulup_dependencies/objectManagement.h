@@ -35,6 +35,9 @@ inline constexpr Tp* Launder(Tp *ptr) noexcept
 #endif //ACHIBULUP__Cpp17_later
 }
 
+
+/// pointer with relaxed contraints on arithmetic and laundering
+/// this can be used to implement UB-free std::vector
 #if ACHIBULUP__Cpp17
 template<typename Tp>
 class RelaxedPtr

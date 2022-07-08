@@ -3,31 +3,33 @@
 
 #include "Entity.hpp"
 #include "ConvexEntity.hpp"
-#include "AssetManager.hpp"
 #include "constants.hpp"
 
 namespace LaserWave
 {
 
-class Player : public Entity, public ConvexEntity
+class Player : public Entity INIT_DEBUG_ID(Player)
 {
+    using HitboxShape = StaticHitboxConvex<4>;
+
   public:
-    using Hitbox = HitboxConvex<4>;
+    using Hitbox = BasicHitboxRef<HitboxShape>;
+
+    static const Id ID;
 
     Player(sf::Vector2f center);
+
+    Entity::Id getId() const noexcept override { return ID; }
     
     sf::Vector2f getCenter() const override;
-    const Hitbox& getHitbox() const override;
 
-    sf::Color getColor() const noexcept override;
+    Hitbox getHitbox() const;
+    sf::Color getColor() const noexcept;
 
     void update(sf::Time dt) override;
 
     bool isInvincible() const;
-    int health() const
-    {
-        return this->m_health;
-    }
+    int health() const;
 
     void shoot(sf::Vector2f direction);
     void kick(sf::Vector2f direction);
@@ -36,16 +38,15 @@ class Player : public Entity, public ConvexEntity
     void setVelocity(sf::Vector2f velocity);
 
   protected:
-    void draw(sf::RenderTarget &tar, sf::RenderStates state = {}) const override
-    {
-        return this->ConvexEntity::draw(tar, state);
-    }
+    Entity::Hitbox v_getHitbox() const override;
+
+    void draw(sf::RenderTarget&, sf::RenderStates = {}) const override;
 
   private:
     void applyAcceleration(sf::Time dt);
     float calcDrag() const;
 
-    Hitbox m_hitbox;
+    BasicHitbox<HitboxShape> m_hitbox;
     sf::Vector2f m_velocity = {};
     int m_health = PLAYER_MAX_HEALTH;
     sf::Time m_invincibility_timer = sf::Time::Zero;

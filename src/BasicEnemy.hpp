@@ -8,30 +8,35 @@
 namespace LaserWave
 {
 
-class BasicEnemy : public Enemy, public ConvexEntity
+class BasicEnemy : public Enemy INIT_DEBUG_ID(BasicEnemy)
 {
+    using HitboxShape = RegularHitboxConvex;
+
   public:
-    using Hitbox = SymetricHitboxConvex<6>;
+    using Hitbox = BasicHitboxRef<HitboxShape>;
+
+    static const Id ID;
 
     BasicEnemy(sf::Vector2f center, sf::Vector2f velocity = {});
 
-    sf::Vector2f getCenter() const override;
-    const Hitbox& getHitbox() const override;
+    Entity::Id getId() const noexcept override { return ID; }
 
-    sf::Color getColor() const noexcept override;
+    sf::Vector2f getCenter() const override;
+
+    Hitbox getHitbox() const;
+    sf::Color getColor() const noexcept;
 
     void update(sf::Time dt) override;
     void getHit(sf::Vector2f direction = {}) override;
     bool gotHit() const;
 
   protected:
-    void draw(sf::RenderTarget &tar, sf::RenderStates state = {}) const override
-    {
-        return this->ConvexEntity::draw(tar, state);
-    }
+    Entity::Hitbox v_getHitbox() const override;
+
+    void draw(sf::RenderTarget&, sf::RenderStates = {}) const override;
 
   private:
-    Hitbox m_hitbox;
+    BasicHitbox<HitboxShape> m_hitbox = BasicHitbox<HitboxShape>(6);
     Angle m_rotation_speed;
     sf::Vector2f m_velocity = {};
     sf::Time m_freeze_time = sf::Time::Zero;

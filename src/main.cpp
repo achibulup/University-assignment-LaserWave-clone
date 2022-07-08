@@ -9,33 +9,20 @@ with the -std=c++17 compiler options.
 
 bool show_hitbox = false;
 std::ofstream log_file("data\\log.txt");
-int main(int argc, char* argv[])
+int main(int argc, const char* argv[])
 {
-    if (argc != 1) show_hitbox = true;
+    for (int i = 0; i < argc; ++i) {
+      if (std::string_view(argv[i]) == "-hitbox")
+        show_hitbox = true;
+    }
     try {
       LaserWave::Game().run();
     }
     catch (const std::exception& e) {
       log_file << "Exception: " << e.what() << '\n';
     }
-    // sf::RenderWindow window(sf::VideoMode(200, 200), "SFML works!");
-    // window.setKeyRepeatEnabled(false);
-    // sf::CircleShape shape(100.f);
-    // shape.setFillColor(sf::Color::Green);
-
-    // while (window.isOpen()) 
-    // {
-    //     sf::Event event;
-    //     while (window.pollEvent(event)) 
-    //     {
-    //         if (event.type == sf::Event::Closed)
-    //             window.close();
-    //     } 
-    //     window.clear();
-    //     window.draw(shape);
-    //     window.display(); 
-    // }
 
     return 0;
 }
+
 //"D:\CODE\compilers\mingw64\bin\g++.exe" -c -std=c++17 "D:\CODE\cpp\libraries\SFML-2.5.1\include\SFML\Achibulup_dependencies\LIFOMemoryResource.cpp" -o "D:\CODE\cpp\libraries\SFML-2.5.1\lib\LIFOmemrsc.o" 

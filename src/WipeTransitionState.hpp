@@ -6,14 +6,14 @@
 namespace LaserWave
 {
 
-class WipeTransitionState : public State
+class WipeTransitionState : public State INIT_DEBUG_ID(WipeTransitionState)
 {
   public:
     static const State::Id ID;
 
     WipeTransitionState(GameDataRef data, std::vector<StateRequest> after);
 
-    State::Id getId() const override
+    State::Id getId() const noexcept override
     {
         return ID;
     }

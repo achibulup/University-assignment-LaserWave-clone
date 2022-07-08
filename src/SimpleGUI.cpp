@@ -9,7 +9,7 @@ void SimpleGUI::addButton(SimpleButton button)
 }
 
 int SimpleGUI::respondToEvent(EventManager &event, 
-                               bool break_on_first_response)
+                              bool break_on_first_response)
 {
     int responses = 0;
     for (auto &click : event.getMouseClicks())

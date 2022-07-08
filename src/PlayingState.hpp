@@ -4,11 +4,12 @@
 #include "State.hpp"
 #include "Player.hpp"
 #include "Enemies.hpp"
-#include "BasicEnemy.hpp"
 #include "GameClock.hpp"
 #include "HealthBar.hpp"
 #include "Particles.hpp"
-#include "assets.hpp"
+#include "ActionIndicator.hpp"
+
+#include <SFML/Audio.hpp>
 
 namespace LaserWave
 {
@@ -19,7 +20,7 @@ struct LaserEndPoint
     const Enemy *hitEnemy;
 };
 
-class PlayingState : public State
+class PlayingState : public State INIT_DEBUG_ID(PlayingState)
 {
   public:
     static const State::Id ID;
@@ -29,7 +30,7 @@ class PlayingState : public State
     void operator = (PlayingState) = delete;
     ~PlayingState();
 
-    State::Id getId() const override
+    State::Id getId() const noexcept override
     {
         return ID;
     }
@@ -54,7 +55,7 @@ class PlayingState : public State
     sf::Vector2f getRandomSpawnPosition() const;
     void spawnEnemy();
     bool isFiltered(const Entity&) const;
-    LaserEndPoint findLaserEndPoint(sf::Vector2f position, sf::Vector2f direction) const;
+    LaserEndPoint castLaser(sf::Vector2f position, sf::Vector2f direction) const;
     sf::Vector2f checkPlayerTouchEdge();
     void playerShoot(sf::Vector2f direction);
     void playerKick(sf::Vector2f direction);

@@ -21,7 +21,7 @@ void GameClock::draw(sf::RenderTarget &target, sf::RenderStates states) const
                      GAMECLOCK_FONT_SIZE);
     display.setPosition(this->m_position.x - display.getGlobalBounds().width / 2.f,
                         this->m_position.y);
-    display.setColor(GAMECLOCK_COLOR);
+    display.setFillColor(GAMECLOCK_COLOR);
     target.draw(display, states);
 }
 

@@ -34,7 +34,7 @@
 #if ACHIBULUP__Cpp17_later
 #if __has_include(<charconv>)
 #include <charconv>
-#endif
+#endif // __has_include(<charconv>)
 #include <string_view>
 #endif //ACHIBULUP__Cpp17_later
 
@@ -61,6 +61,11 @@ inline constexpr size_t ssizeof(Tp&&) noexcept
 {
     return sizeof(Tp);
 }
+
+
+
+
+///some useful type traits not in std in c++11
 
 template<typename Tp>
 struct Typeof_helper
@@ -114,10 +119,46 @@ template<typename from, typename to>
 using copy_cvref_t = typename copy_cvref<from, to>::type;
 
 
+
+
+
+namespace n_utils
+{
+
+struct FallBack
+{
+    template<typename Tp>
+    constexpr FallBack(Tp*){}
+};
+
+template<template<typename...> class>
+constexpr bool isDerivedFromHelper(FallBack) { return false; }
+
+template<template<typename...> class TemplClass, typename ...Args>
+constexpr bool isDerivedFromHelper(TemplClass<Args...>*) { return true; }
+
+template<typename Class, template<typename...> class TemplClass>
+constexpr bool isDerivedFrom()
+{
+    return isDerivedFromHelper<TemplClass>(static_cast<Class*>(nullptr));
+}
+
+}
+
+
+/// test if a class derives from a class template specialization
+template<typename Class, template<typename...> class TemplClass>
+struct IsDerivedFrom
+: std::integral_constant<bool, n_utils::isDerivedFrom<Class, TemplClass>()> {};
+
+
+
+
+
 /**
  * Extract the value from the variable and reset it to default if it is trivial;
-  Otherwise, create a Move reference to it.
- * Usually used in Move constructors to reset the fields of the Moved variable
+  Otherwise, create a move reference to it.
+ * Usually used in move constructors to reset the fields of the moved variable
  * Note : this only accept lvalues as argument
 
 
@@ -155,6 +196,294 @@ inline ACHIBULUP__constexpr_fun14 void MoveAssign(Tp &dest, Tp &src)
 
 
 
+namespace n_utils
+{
+
+enum class ValueType {CLVALUE, RVALUE, DEFAULT};
+
+constexpr size_t TRIVIAL_ARGUMENT_THRESHOLD = ssizeof<void*>() * 4;
+template<typename Tp>
+constexpr bool isTrivialArg()
+{
+    return std::is_trivially_copyable<Tp>::value
+        && ssizeof<Tp>() <= TRIVIAL_ARGUMENT_THRESHOLD;
+}
+
+}
+
+
+///helps reduce function overloads for lvalue and rvalue reference
+///while avoid pass-by-value argument
+///typically used in generic cases where the type might not have move contructor (or it might not be super fast)
+///example:
+///func(const Tp &value);
+///func(Tp &&value);
+///can be replaced with
+///func(Argument<Tp> value);
+///it can also be defaulted
+///func(Argument<Tp> value = {}) -> create default
+template<typename Tp, typename = void>
+class Argument;
+
+
+///specialization for reference
+template<typename Tp>
+class Argument<Tp&, void>
+{
+  public:
+    constexpr Argument(Tp& value) noexcept : m_value(&value) {}
+
+    constexpr Argument(Argument&&) = default;
+
+    constexpr operator Tp& () const &&
+    {
+        return *this->m_value;;
+    }
+    constexpr Tp& get() const
+    {
+        return std::move(*this);
+    }
+
+  private:
+    decltype(&std::declval<Tp&>()) m_value;
+};
+///specialization for reference
+template<typename Tp>
+class Argument<Tp&&, void>
+{
+  public:
+    constexpr Argument(Tp&& value) noexcept : m_value(&value) {}
+
+    constexpr Argument(Argument&&) = default;
+
+    constexpr operator Tp&& () const &&
+    {
+        return std::move(*this->m_value);
+    }
+    constexpr Tp&& get() const
+    {
+        return std::move(*this);
+    }
+
+  private:
+    decltype(&std::declval<Tp&>()) m_value;
+};
+
+
+///specializatio for small, trivial type : argument will be passed by value
+template<typename Tp>
+class Argument<Tp, 
+               EnableIf_t<!std::is_reference<Tp>::value
+                       && n_utils::isTrivialArg<Tp>()
+                       && std::is_trivially_default_constructible<Tp>::value,
+                          void>>
+{
+  public:
+    constexpr Argument(const Tp value = {}) noexcept : m_value(value) {}
+
+    constexpr Argument(Argument&&) = default;
+
+    constexpr operator Tp () const && noexcept
+    {
+        return this->m_value;
+    }
+    constexpr Tp get() const
+    {
+        return std::move(*this);
+    }
+
+  private:
+    Tp m_value;
+};
+///specialization for small, trivial type : argument will be passed by value
+template<typename Tp>
+class Argument<Tp, 
+               EnableIf_t<!std::is_reference<Tp>::value
+                       && n_utils::isTrivialArg<Tp>()
+                       && !std::is_trivially_default_constructible<Tp>::value,
+                          void>>
+{
+  public:
+    constexpr Argument(const Tp value) noexcept : m_value(value) {}
+
+    constexpr Argument(Argument&&) = default;
+
+    constexpr operator Tp () const && noexcept
+    {
+        return this->m_value;
+    }
+    constexpr Tp get() const
+    {
+        return std::move(*this);
+    }
+
+  private:
+    Tp m_value;
+};
+
+
+template<typename Tp>
+class Argument<Tp, EnableIf_t<!std::is_reference<Tp>::value
+                           && !n_utils::isTrivialArg<Tp>()
+                           && std::is_copy_constructible<Tp>::value
+                           && std::is_default_constructible<Tp>::value, 
+                              void>>
+{
+  public:
+    constexpr Argument() noexcept
+    : m_value(), m_value_type(n_utils::ValueType::DEFAULT) {} 
+
+    constexpr Argument(const Tp& value) noexcept 
+    : m_value(&value), m_value_type(n_utils::ValueType::CLVALUE) {}
+
+    constexpr Argument(Tp &&value) noexcept
+    : m_value(&static_cast<const Tp&>(value)), 
+      m_value_type(n_utils::ValueType::RVALUE) {}
+
+    constexpr Argument(Argument&&) = default;
+
+    constexpr operator Tp () const &&
+    {
+        if (this->m_value_type == n_utils::ValueType::RVALUE) 
+          return std::move(const_cast<Tp&>(*this->m_value));
+        if (this->m_value_type == n_utils::ValueType::CLVALUE) 
+          return *this->m_value;
+        return Tp();
+    }
+    constexpr Tp get() const
+    {
+        return std::move(*this);
+    }
+
+  private:
+    decltype(&std::declval<const Tp&>()) m_value;
+    n_utils::ValueType m_value_type;
+};
+template<typename Tp>
+class Argument<Tp, 
+                EnableIf_t<!std::is_reference<Tp>::value
+                        && !n_utils::isTrivialArg<Tp>()
+                        && std::is_copy_constructible<Tp>::value
+                        && !std::is_default_constructible<Tp>::value, 
+                            void>>
+{
+  public:
+    constexpr Argument(const Tp& value) noexcept 
+    : m_value(&value), m_value_type(n_utils::ValueType::CLVALUE) {}
+
+    constexpr Argument(Tp &&value) noexcept
+    : m_value(&static_cast<const Tp&>(value)), 
+      m_value_type(n_utils::ValueType::RVALUE) {}
+
+    constexpr Argument(Argument&&) = default;
+
+    constexpr operator Tp () const &&
+    {
+        if (this->m_value_type == n_utils::ValueType::RVALUE) 
+          return std::move(const_cast<Tp&>(*this->m_value));
+        return *this->m_value;
+    }
+    constexpr Tp get() const
+    {
+        return std::move(*this);
+    }
+
+  private:
+    decltype(&std::declval<const Tp&>()) m_value;
+    n_utils::ValueType m_value_type;
+};
+
+template<typename Tp>
+class Argument<Tp, 
+               EnableIf_t<!std::is_reference<Tp>::value
+                       && !n_utils::isTrivialArg<Tp>()
+                       && !std::is_copy_constructible<Tp>::value
+                       && std::is_move_constructible<Tp>::value
+                       && std::is_default_constructible<Tp>::value, 
+                          void>>
+{
+  public:
+    constexpr Argument() noexcept
+    : m_value(), m_value_type(n_utils::ValueType::DEFAULT) {}
+
+    constexpr Argument(Tp &&value) noexcept
+    : m_value(&static_cast<const Tp&>(value)), 
+      m_value_type(n_utils::ValueType::RVALUE) {}
+
+    constexpr Argument(Argument&&) = default;
+
+    constexpr operator Tp () const &&
+    {
+        if (this->m_value_type == n_utils::ValueType::RVALUE) 
+          return std::move(const_cast<Tp&>(*this->m_value));
+        return Tp();
+    }
+    constexpr Tp get() const
+    {
+        return std::move(*this);
+    }
+
+  private:
+    decltype(&std::declval<const Tp&>()) m_value;
+    n_utils::ValueType m_value_type;
+};
+template<typename Tp>
+class Argument<Tp, 
+               EnableIf_t<!std::is_reference<Tp>::value
+                       && !n_utils::isTrivialArg<Tp>()
+                       && !std::is_copy_constructible<Tp>::value
+                       && std::is_move_constructible<Tp>::value
+                       && !std::is_default_constructible<Tp>::value, 
+                          void>>
+{
+  public:
+    constexpr Argument(Tp &&value) noexcept
+    : m_value(&static_cast<const Tp&>(value)){}
+
+    constexpr Argument(Argument&&) = default;
+
+    constexpr operator Tp () const &&
+    {
+        return std::move(const_cast<Tp&>(*this->m_value));
+    }
+    constexpr Tp get() const
+    {
+        return std::move(*this);
+    }
+
+  private:
+    decltype(&std::declval<const Tp&>()) m_value;
+};
+
+#if ACHIBULUP__Cpp17_later
+///Argument type that is not move-contructible
+///can only be default inittialized
+///rely on copy elision
+template<typename Tp>
+class Argument<Tp, 
+               EnableIf_t<!std::is_reference<Tp>::value
+                       && !n_utils::isTrivialArg<Tp>()
+                       && !std::is_move_constructible<Tp>::value
+                       && std::is_default_constructible<Tp>::value, 
+                          void>>
+{
+  public:
+    constexpr Argument() noexcept = default;
+
+    constexpr Argument(Argument&&) = default;
+
+    constexpr operator Tp () const &&
+    {
+        return Tp();
+    }
+    constexpr Tp get() const
+    {
+        return std::move(*this);
+    }
+
+  private:
+};
+#endif
 
 
 /// string utilities
@@ -281,100 +610,108 @@ std::string stringFormat(const Args& ...args)
 
 template<typename Tp>
 Tp convert(string_view);
-// #if ACHIBULUP__Cpp17_later
-// template<> int convert<int>(string_view str)
-// {
-//     int res = 0;
-//     std::from_chars(str.data(), str.data() + str.size(), res);
-//     return res;
-// }
-// template<> unsigned int convert<unsigned int>(string_view str)
-// {
-//     unsigned int res = 0;
-//     std::from_chars(str.data(), str.data() + str.size(), res);
-//     return res;
-// }
-// template<> short convert<short>(string_view str)
-// {
-//     short res = 0;
-//     std::from_chars(str.data(), str.data() + str.size(), res);
-//     return res;
-// }
-// template<> unsigned short convert<unsigned short>(string_view str)
-// {
-//     unsigned short res = 0;
-//     std::from_chars(str.data(), str.data() + str.size(), res);
-//     return res;
-// }
-// template<> long convert<long>(string_view str)
-// {
-//     long res = 0;
-//     std::from_chars(str.data(), str.data() + str.size(), res);
-//     return res;
-// }
-// template<> unsigned long convert<unsigned long>(string_view str)
-// {
-//     unsigned long res = 0;
-//     std::from_chars(str.data(), str.data() + str.size(), res);
-//     return res;
-// }
-// template<> long long convert<long long>(string_view str)
-// {
-//     long long res = 0;
-//     std::from_chars(str.data(), str.data() + str.size(), res);
-//     return res;
-// }
-// template<> unsigned long long convert<unsigned long long>(string_view str)
-// {
-//     unsigned long long res = 0;
-//     std::from_chars(str.data(), str.data() + str.size(), res);
-//     return res;
-// }
-// #else
-// template<> int 
-// convert<int>(string_view str)
-// {
-//     return std::stoll(str);
-// }
-// template<> unsigned int 
-// convert<unsigned int>(string_view str)
-// {
-//     return std::stoull(str);
-// }
-// template<> short 
-// convert<short>(string_view str)
-// {
-//     return std::stoll(str);
-// }
-// template<> unsigned short 
-// convert<unsigned short>(string_view str)
-// {
-//     return std::stoull(str);
-// }
-// template<> long 
-// convert<long>(string_view str)
-// {
-//     return std::stoll(str);
-// }
-// template<> unsigned long 
-// convert<unsigned long>(string_view str)
-// {
-//     return std::stoull(str);
-// }
-// template<> long long 
-// convert<long long>(string_view str)
-// {
-//     return std::stoll(str);
-// }
-// template<> unsigned long long 
-// convert<unsigned long long>(string_view str)
-// {
-//     return std::stoull(str);
-// }
-// #endif
+#if ACHIBULUP__Cpp17_later && __has_include(<charconv>)
+template<> inline int 
+convert<int>(string_view str)
+{
+    int res = 0;
+    std::from_chars(str.data(), str.data() + str.size(), res);
+    return res;
+}
+template<> inline unsigned int 
+convert<unsigned int>(string_view str)
+{
+    unsigned int res = 0;
+    std::from_chars(str.data(), str.data() + str.size(), res);
+    return res;
+}
+template<> inline short 
+convert<short>(string_view str)
+{
+    short res = 0;
+    std::from_chars(str.data(), str.data() + str.size(), res);
+    return res;
+}
+template<> inline unsigned short 
+convert<unsigned short>(string_view str)
+{
+    unsigned short res = 0;
+    std::from_chars(str.data(), str.data() + str.size(), res);
+    return res;
+}
+template<> inline long 
+convert<long>(string_view str)
+{
+    long res = 0;
+    std::from_chars(str.data(), str.data() + str.size(), res);
+    return res;
+}
+template<> inline unsigned long 
+convert<unsigned long>(string_view str)
+{
+    unsigned long res = 0;
+    std::from_chars(str.data(), str.data() + str.size(), res);
+    return res;
+}
+template<> inline long long 
+convert<long long>(string_view str)
+{
+    long long res = 0;
+    std::from_chars(str.data(), str.data() + str.size(), res);
+    return res;
+}
+template<> inline unsigned long long 
+convert<unsigned long long>(string_view str)
+{
+    unsigned long long res = 0;
+    std::from_chars(str.data(), str.data() + str.size(), res);
+    return res;
+}
+#else
+template<> inline int 
+convert<int>(string_view str)
+{
+    return std::stoll(std::string(str));
+}
+template<> inline unsigned int 
+convert<unsigned int>(string_view str)
+{
+    return std::stoull(std::string(str));
+}
+template<> inline short 
+convert<short>(string_view str)
+{
+    return std::stoll(std::string(str));
+}
+template<> inline unsigned short 
+convert<unsigned short>(string_view str)
+{
+    return std::stoull(std::string(str));
+}
+template<> inline long 
+convert<long>(string_view str)
+{
+    return std::stoll(std::string(str));
+}
+template<> inline unsigned long 
+convert<unsigned long>(string_view str)
+{
+    return std::stoull(std::string(str));
+}
+template<> inline long long 
+convert<long long>(string_view str)
+{
+    return std::stoll(std::string(str));
+}
+template<> inline unsigned long long 
+convert<unsigned long long>(string_view str)
+{
+    return std::stoull(std::string(str));
+}
+#endif
 
 
-namespace n_Utils
+namespace n_utils
 {
     template<typename Tp>
     struct is_basic 
@@ -403,7 +740,7 @@ namespace n_Utils
   }
 */
 template<typename Type, class Class, 
-    typename = EnableIf_t<n_Utils::is_basic<Type>::value>>
+    typename = EnableIf_t<n_utils::is_basic<Type>::value>>
 class AutoProperty
 {
   private:

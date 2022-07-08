@@ -8,6 +8,7 @@
 namespace LaserWave
 {
 
+/// the recommended container for general purpose
 template<typename Tp>
 using List = std::vector<Tp>;
 

@@ -8,13 +8,14 @@
 #include "PauseState.hpp"
 #include "stateRequests.hpp"
 #include "WipeTransitionState.hpp"
+#include "collisions.hpp"
 
 extern bool show_hitbox;
 
 namespace LaserWave
 {
 
-const State::Id PlayingState::ID = "Playing";
+const State::Id PlayingState::ID("Playing");
 
 PlayingState::PlayingState(GameDataRef data) 
 : State(data),
@@ -41,17 +42,17 @@ PlayingState::PlayingState(GameDataRef data)
         this->getWindow().getSize().x / 2 - this->m_gameover_text.getGlobalBounds().width / 2,
         GAMEOVER_Y
     });
-    this->m_gameover_text.setColor(GAMEOVER_COLOR);
+    this->m_gameover_text.setFillColor(GAMEOVER_COLOR);
     this->m_gameover_sub1_text.setPosition({
         this->getWindow().getSize().x / 2 - this->m_gameover_sub1_text.getGlobalBounds().width / 2,
         GAMEOVER_SUBTITLE1_Y
     });
-    this->m_gameover_sub1_text.setColor(GAMEOVER_COLOR);
+    this->m_gameover_sub1_text.setFillColor(GAMEOVER_COLOR);
     this->m_gameover_sub2_text.setPosition({
         this->getWindow().getSize().x / 2 - this->m_gameover_sub2_text.getGlobalBounds().width / 2,
         GAMEOVER_SUBTITLE2_Y
     });
-    this->m_gameover_sub2_text.setColor(GAMEOVER_COLOR);
+    this->m_gameover_sub2_text.setFillColor(GAMEOVER_COLOR);
 }
 PlayingState::~PlayingState() = default;
 
@@ -131,13 +132,13 @@ void PlayingState::action()
   auto next_action_delay = sf::seconds(next_note.delay);
   if (this->m_action_timer >= next_action_delay) {
 
-    if (next_note.type == DrumNote::SNARE) {
+    if (next_note.type == PlayerAction::SHOOT) {
       auto mouse_pos = sf::Vector2f(sf::Mouse::getPosition());
       sf::Vector2f direction = mouse_pos - m_player.getCenter();
       direction = normalize(direction);
       this->playerShoot(direction);
     }
-    else if (next_note.type == DrumNote::KICK) {
+    else if (next_note.type == PlayerAction::KICK) {
       auto mouse_pos = sf::Vector2f(sf::Mouse::getPosition());
       sf::Vector2f direction = mouse_pos - m_player.getCenter();
       direction = normalize(direction);
@@ -221,7 +222,7 @@ void PlayingState::randomlySpawnEnemy()
 float PlayingState::getEnemySpawnProbability()
 {
     float sin_time = sin(this->m_enemy_spawn_timer.asSeconds() * 1.8);
-    return 0.002 + 0.05 * std::pow(sqr(sin_time), 3);
+    return 0.008 + 0.09 * std::pow(sqr(sin_time), 3);
 }
 
 void PlayingState::spawnEnemy()
@@ -236,7 +237,7 @@ void PlayingState::playerShoot(sf::Vector2f direction)
     this->m_player.shoot(direction);
     sf::Vector2f laser_start_pos 
         = this->m_player.getCenter() + direction * PLAYER_LASER_START_OFFSET;
-    auto laser_end = this->findLaserEndPoint(laser_start_pos, direction);
+    auto laser_end = this->castLaser(laser_start_pos, direction);
     if (laser_end.hitEnemy) 
       const_cast<Enemy&>(*laser_end.hitEnemy).getHit();
     this->m_particles.addParticle(makeUnique<LaserBeam>(
@@ -262,12 +263,13 @@ void PlayingState::playerGetHit(sf::Vector2f direction)
 }
 
 LaserEndPoint PlayingState::
-findLaserEndPoint(sf::Vector2f position, sf::Vector2f direction) const
+castLaser(sf::Vector2f position, sf::Vector2f direction) const
 {
-    using LaserFront = SymetricHitboxConvex<4>;
+    using LaserFront = RegularHitboxConvex;
     auto getHitEnemy = [&] (const LaserFront &laser_front) {
+      auto laser_hitbox = BasicHitboxRef(laser_front);
       for (const Enemy &enemy : this->m_enemies) {
-        if (intersects(laser_front, enemy.getHitbox()))
+        if (collides(laser_hitbox, enemy.getHitbox()))
           return &enemy;
       }
       return static_cast<const Enemy*>(nullptr);
@@ -286,7 +288,7 @@ findLaserEndPoint(sf::Vector2f position, sf::Vector2f direction) const
           || center.y < TOP_Y
           || center.y > BOTTOM_Y;
     };
-    LaserFront laser_front;
+    LaserFront laser_front(4);
     float front_size = calcLaserFrontSize(direction, LASER_WIDTH);
     laser_front.setRadius(front_size * 1.4f);
     laser_front.setCenter(position);
@@ -294,7 +296,7 @@ findLaserEndPoint(sf::Vector2f position, sf::Vector2f direction) const
 
     while (!outOfScreen(laser_front)) {
       auto *enemy = getHitEnemy(laser_front);
-      laser_front.translate(direction * 6.f);
+      laser_front.translate(direction * 1.f);
       if (enemy)
         return LaserEndPoint{laser_front.getCenter() + 14.f * direction, enemy};
     }
@@ -355,20 +357,14 @@ sf::Vector2f PlayingState::checkPlayerTouchEdge()
     const float BOTTOM_Y = this->getWindow().getSize().y - 10;
     const float LEFT_X = 10;
     const float RIGHT_X = this->getWindow().getSize().x - 10;
-    auto &&player_hitbox = this->m_player.getHitbox();
+
+    auto &&player_box = this->m_player.getHitbox().getBoundingBox();
     
-    int vertices = player_hitbox.vertexCount();
-    bool touch_top = false;
-    bool touch_bottom = false;
-    bool touch_left = false;
-    bool touch_right = false;
-    for (int i = 0; i < vertices; ++i) {
-      auto &&vertex = player_hitbox.getVertex(i);
-      touch_left |= vertex.x < LEFT_X;
-      touch_right |= vertex.x > RIGHT_X;
-      touch_top |= vertex.y < TOP_Y;
-      touch_bottom |= vertex.y > BOTTOM_Y;
-    }
+    bool touch_left = player_box.getLeft() < LEFT_X;
+    bool touch_right = player_box.getRight() > RIGHT_X;
+    bool touch_top = player_box.getTop() < TOP_Y;
+    bool touch_bottom = player_box.getBottom() > BOTTOM_Y;
+      
     sf::Vector2f direction = {0, 0};
     if (touch_left) direction += {1.f, 0.f};
     if (touch_right) direction += {-1.f, 0.f};

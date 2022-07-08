@@ -8,7 +8,7 @@
 namespace LaserWave
 {
 
-const State::Id PauseState::ID = "Pause";
+const State::Id PauseState::ID("Pause");
 
 PauseState::PauseState(GameDataRef data)
 : State(data), m_cursor(&this->getAssets().getCursor(DEFAULT_CURSOR)),
@@ -18,7 +18,7 @@ PauseState::PauseState(GameDataRef data)
     m_pause_text.setPosition({this->getWindow().getSize().x / 2 
                            -  m_pause_text.getGlobalBounds().width / 2,
                               PAUSE_TITLE_Y});
-    m_pause_text.setColor(PAUSE_TITLE_COLOR);
+    m_pause_text.setFillColor(PAUSE_TITLE_COLOR);
 
     const sf::Texture *resume_texture = &this->getAssets().getTexture(RESUME_BUTTON);
     const sf::Texture *resume_hover_texture = &this->getAssets().getTexture(RESUME_BUTTON_HOVER);

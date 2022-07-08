@@ -5,6 +5,8 @@
 namespace LaserWave
 {
 
+const Entity::Id Player::ID("Player");
+
 Player::Player(sf::Vector2f center)
 : m_hitbox(center)
 {
@@ -19,29 +21,52 @@ Point Player::getCenter() const
     return this->m_hitbox.getCenter();
 }
 
-const Player::Hitbox& Player::getHitbox() const
+auto Player::getHitbox() const -> Hitbox
 {
     return this->m_hitbox;
+}
+auto Player::v_getHitbox() const -> Entity::Hitbox
+{
+    return this->getHitbox();
 }
 
 sf::Color Player::getColor() const noexcept
 {
-    return PLAYER_COLOR;
+    float invincibility_interpolation = this->m_invincibility_timer.asSeconds()
+                                      / PLAYER_INVINCIBILITY_DURATION;
+    float color_interpolation = std::cbrt(sqr((invincibility_interpolation)));
+    sf::Color color = {
+      PLAYER_COLOR.r + (PLAYER_INVINCIBLE_COLOR.r - PLAYER_COLOR.r) * color_interpolation,
+      PLAYER_COLOR.g + (PLAYER_INVINCIBLE_COLOR.g - PLAYER_COLOR.g) * color_interpolation,
+      PLAYER_COLOR.b + (PLAYER_INVINCIBLE_COLOR.b - PLAYER_COLOR.b) * color_interpolation
+    };
+    return color;
 }
 
 void Player::update(sf::Time dt)
 {
     this->m_hitbox.translate(dt.asSeconds() * this->m_velocity);
     this->applyAcceleration(dt);
+    this->m_hitbox.updateBoundingBox();
     if (this->isInvincible()) {
       this->m_invincibility_timer 
           = std::max(this->m_invincibility_timer - dt, sf::Time::Zero);
     }
 }
 
+
+void Player::draw(sf::RenderTarget &tar, sf::RenderStates state) const
+{
+    return LaserWave::draw(tar, this->m_hitbox, this->getColor(), state);
+}
+
 bool Player::isInvincible() const
 {
     return this->m_invincibility_timer > sf::Time::Zero;
+}
+int Player::health() const
+{
+    return this->m_health;
 }
 
 void Player::shoot(sf::Vector2f direction)

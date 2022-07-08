@@ -8,7 +8,7 @@
 namespace LaserWave
 {
 
-const State::Id MenuState::ID = "Menu";
+const State::Id MenuState::ID("Menu");
 
 sf::Color calcClickMessageColor(sf::Time time);
 
@@ -21,13 +21,13 @@ MenuState::MenuState(GameDataRef data)
     this->m_title.setPosition(this->getWindow().getSize().x / 2
                             - this->m_title.getGlobalBounds().width / 2,
                               TITLE_Y);
-    this->m_title.setColor(TITLE_COLOR);
+    this->m_title.setFillColor(TITLE_COLOR);
 
     this->m_click_to_play_message.setPosition(
         this->getWindow().getSize().x / 2
       - this->m_click_to_play_message.getGlobalBounds().width / 2,
         CLICK_Y);
-    this->m_click_to_play_message.setColor(
+    this->m_click_to_play_message.setFillColor(
         calcClickMessageColor(this->m_message_timer));
 
 
@@ -47,7 +47,7 @@ MenuState::~MenuState() = default;
 void MenuState::update(sf::Time dt, EventManager &event)
 { 
     this->m_message_timer += dt;
-    this->m_click_to_play_message.setColor(
+    this->m_click_to_play_message.setFillColor(
         calcClickMessageColor(this->m_message_timer));
 
     if (this->m_GUI.respondToEvent(event)) {}

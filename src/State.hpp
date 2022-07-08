@@ -4,6 +4,7 @@
 #include "commons.hpp"
 #include "EventManager.hpp"
 #include "GameDataRef.hpp"
+#include "IdTemplate.hpp"
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <string_view>
@@ -11,28 +12,17 @@
 namespace LaserWave
 {
 
+
+
 class State
 {
   public:
-    class Id : public std::string_view
-    {
-      public:
-        using std::string_view::string_view;
-
-        friend bool operator == (Id lhs, Id rhs)
-        {
-            return lhs.data() == rhs.data() && lhs.size() == rhs.size();
-        }
-        friend bool operator != (Id lhs, Id rhs)
-        {
-            return !(lhs == rhs);
-        }
-    };
+    using Id = IdTemplate<State>;
 
     explicit State(GameDataRef data) : m_data(data) {}
     virtual ~State() = default;
 
-    virtual Id getId() const = 0;
+    virtual Id getId() const noexcept = 0;
 
     // virtual void init() = 0;
     virtual void update(sf::Time dt, EventManager&) = 0;
@@ -49,8 +39,6 @@ class State
 
     bool isPaused() const { return this->m_paused; }
 
-    // Context getContext() const;
-
   protected:
     sf::RenderWindow &getWindow() const { return this->m_data.getWindow(); }
     const AssetManager &getAssets() const { return this->m_data.getAssets(); }
@@ -63,6 +51,8 @@ class State
 
   private:
     bool m_paused = false;
+
+    DEBUG_ID_VAR
 };
 
 template<typename ...Reqs>

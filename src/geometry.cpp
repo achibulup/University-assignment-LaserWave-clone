@@ -1,15 +1,77 @@
-#include "geometry.hpp"
-#include "gamemaths.hpp"
+#include "geometry_impl.hpp"
 
 namespace LaserWave
 {
 
-float length(LineSegment line)
+bool intersects(const LineSegment &line1, const LineSegment &line2)
 {
-    return abs(line.p1 - line.p2);
+    return intersectType(line1, line2) != NO_INTERSECTION;
 }
 
-const Shape::Id IPolygon::ID = "IPolygon";
+bool intersects(const Box &box, const LineSegment &line)
+{
+    if (!intersects(box, boundingBox(line))) return false;
+    if ((line.p1.x == line.p2.x)
+      & (line.p1.y == line.p2.y)) return true;
+
+    if (contains(box, line.p1) || contains(box, line.p2)) return true;
+
+    int x1 = box.getLeft();
+    int x2 = box.getRight();
+    int y1 = box.getTop();
+    int y2 = box.getBottom();
+
+    auto v = line.p2 - line.p1;
+    float dx1 = x1 - line.p1.x;
+    float dx2 = x2 - line.p1.x;
+    float dy1 = y1 - line.p1.y;
+    float dy2 = y2 - line.p1.y;
+    float dx1vy = dx1 * v.y;
+    float dx2vy = dx2 * v.y;
+    float dy1vx = dy1 * v.x;
+    float dy2vx = dy2 * v.x;
+    
+    if (((line.p1.x != x1) & (line.p2.x != x1))
+     && (line.p1.x < x1) != (line.p2.x < x1)
+     && (dy1vx - dx1vy < 0) != (dy2vx - dx1vy < 0))
+      return true;
+    
+    if (((line.p1.x != x2) & (line.p2.x != x2))
+     && (line.p1.x < x2) != (line.p2.x < x2)
+     && (dy1vx - dx2vy < 0) != (dy2vx - dx2vy < 0))
+      return true;
+    
+    if (((line.p1.y != y1) & (line.p2.y != y1))
+     && (line.p1.y < y1) != (line.p2.y < y1)
+     && (dy1vx - dx1vy < 0) != (dy1vx - dx2vy < 0))
+      return true;
+      
+    if (((line.p1.y != y2) & (line.p2.y != y2))
+     && (line.p1.y < y2) != (line.p2.y < y2)
+     && (dy2vx - dx1vy < 0) != (dy2vx - dx2vy < 0))
+      return true;
+    
+    return false;
+}
+
+
+
+const Shape::Id IPolygon::ID("Polygon");
+
+Box IPolygon::getBoundingBox() const noexcept
+{
+    float top, left, bottom, right;
+    auto first = this->getVertex(0);
+    top = first.y; bottom = top;
+    left = first.x; right = left;
+    for (Point point : move(this->vertices())) {
+      top = std::min(top, point.y);
+      left = std::min(left, point.x);
+      bottom = std::max(bottom, point.y);
+      right = std::max(right, point.x);
+    }
+    return {left, top, right, bottom};
+}
 
 LineSegment IPolygon::getEdge(int index) const
 {
@@ -27,18 +89,80 @@ List<Point> IPolygon::getVertices() const
 {
     int vertices = this->vertexCount();
     List<Point> res(vertices);
-    for (int i = 0; i < vertices; ++i)
-      res[i] = this->getVertex(i);
+    int index = 0;
+    for (auto point : move(this->vertices()))
+      res[index++] = point;
     return res;
 }
 
-void IPolygon::checkIndex(int index) const
+void IPolygon::throwInvalidIndex(int index) const
 {
-    if (index < 0 || index >= this->vertexCount()) 
-        throw std::out_of_range(Achibulup::stringFormat(
-            "IPolygon::checkIndex(int index): index out of range (the number of vertices is ",
-            this->vertexCount(),"and index == ",index));
+    throw std::out_of_range(Achibulup::stringFormat(
+        "IPolygon::checkIndex(int index): index out of range (the number of vertices is ",
+        this->vertexCount(),"and index == ",index));
 }
+
+class IPolygon::VertexIterator : public Achibulup::IInputIterator<Point>
+{
+  public:
+    explicit VertexIterator(const IPolygon &polygon, int index = 0)
+    : m_source(&polygon), m_index(index), m_end(polygon.vertexCount()) {}
+
+    Point yield() override final
+    {
+        auto res = this->m_source->getVertex(this->m_index++);
+        this->setIsEnd(this->m_index == this->m_end);
+        return res;
+    }
+
+  private:
+    const IPolygon *m_source;
+    int m_index, m_end;
+};
+
+Achibulup::PMIIterator<Point> IPolygon::v_verticesBegin() const
+{
+    return VertexIterator(*this);
+}
+
+
+// IPolygon::EdgeIterator::EdgeIterator(const IPolygon &polygon)
+// : m_vertexIter(polygon.v_verticesBegin())
+// {
+//     this->m_currentP1 = *this->m_vertexIter;
+//     ++this->m_vertexIter;
+//     this->m_currentP2 = *this->m_vertexIter;
+//     this->m_first = this->m_currentP1;
+// }
+
+// LineSegment IPolygon::EdgeIterator::get() const
+// {
+//     return LineSegment(this->m_currentP1, this->m_currentP2);
+// }
+
+// void IPolygon::EdgeIterator::advance()
+// {
+//     if (this->m_vertexIter.isEnd()) {
+//       this->m_vertexIter = {};
+//       return;
+//     }
+//     this->m_currentP1 = this->m_currentP2;
+//     ++this->m_vertexIter;
+//     if (this->m_vertexIter.isEnd()) 
+//       this->m_currentP2 = this->m_first;
+//     else
+//       this->m_currentP2 = *this->m_vertexIter;
+// }
+
+// bool IPolygon::EdgeIterator::isEnd() const noexcept
+// {
+//     return !this->m_vertexIter;
+// }
+
+const Shape::Id IConvexPolygon::ID("ConvexPolygon");
+
+
+const Polygon::Id Polygon::ID("Polygon");
 
 
 Polygon::Polygon(int n_vertices)
@@ -55,234 +179,32 @@ Polygon::Polygon(std::initializer_list<Point> points)
         "Polygon::Polygon(std::initializer_list<Point>): Polygon must have at least 3 points (n_vertices == ",
         points.size()));
     this->resize(points.size());
-    for (int i = 0; i < points.size(); ++i)
-      this->vertex(i) = points.begin()[i];
-}
-
-int Polygon::vertexCount() const noexcept
-{
-    return this->m_nVertices;
-}
-
-Point& Polygon::vertex(int index)
-{
-    this->checkIndex(index);
-    if (index < SMALL_POLYGON_OPT_THRESHOLD)
-      return this->m_reservedVertices[index];
-    else
-      return this->m_remainingVertices[index - SMALL_POLYGON_OPT_THRESHOLD];
-}
-const Point& Polygon::vertex(int index) const
-{
-    return const_cast<Polygon*>(this)->vertex(index);
+    auto iter = this->vertices().begin();
+    for (int i = 0; i < points.size(); ++i) {
+      *iter = points.begin()[i];
+      ++iter;
+    }
 }
 
 void Polygon::resize(int n_vertices)
 {
     this->m_nVertices = n_vertices;
-    if (n_vertices < SMALL_POLYGON_OPT_THRESHOLD)
-      this->m_remainingVertices.clear();
-    else
-      this->m_remainingVertices.resize(n_vertices - SMALL_POLYGON_OPT_THRESHOLD);
-}
-
-void Polygon::addVertex(Point vertex)
-{
-    if (this->m_nVertices < SMALL_POLYGON_OPT_THRESHOLD)
-      this->m_reservedVertices[this->m_nVertices] = vertex;
-    else
-      this->m_remainingVertices.push_back(vertex);
-    ++this->m_nVertices;
+    if (n_vertices > SMALL_POLYGON_OPT_THRESHOLD 
+     && n_vertices > this->m_list.size())
+      this->m_list.resize(n_vertices);
 }
 
 
+const Shape::Id Circle::ID("Circle");
 
-const Shape::Id Circle::ID = "Circle";
-void Circle::setRadius(float radius)
+void Circle::throwInvalidSetRadius(float radius) const
 {
-    if (radius < 0) throw std::invalid_argument(Achibulup::stringFormat(
+    throw std::invalid_argument(Achibulup::stringFormat(
         "Circle::setRadius(float radius): radius must be non-negative (radius == ",
         radius));
-    this->m_radius = radius;
 }
 
 
 
-// struct Triangle
-// {
-//     Point p1, p2, p3;
-// };
-
-float algebraicArea(const LineSegment &line)
-{
-    return 0.5 * (line.p2.x - line.p1.x) * (line.p1.y + line.p2.y);
-}
-
-float algebraicArea(Point p1, Point p2, Point p3)
-{
-    return 0.5 * ((p2.x - p1.x) * (p3.y - p1.y) - (p3.x - p1.x) * (p2.y - p1.y));
-}
-
-float algebraicArea(const IPolygon &polygon)
-{
-    float area = 0;
-    int vertices = polygon.vertexCount();
-    for (int i = 0; i < vertices; ++i)
-      area += algebraicArea(polygon.getEdge(i));
-    return area;
-}
-
-float area(const Circle &circle)
-{
-    return PI * sqr(circle.getRadius());
-}
-
-const int NO_INTERSECTION = 0;
-const int INTERSECT_CROSS_TOUCH = 1;
-const int INTERSECT_CROSS = 2;
-const int INTERSECT_OVERLAP = 4;
-
-const int UNDEFINED_ANGLE = -1;
-const int ZERO_ANGLE = 0;
-const int ACUTE_ANGLE = 1;
-const int RIGHT_ANGLE = 2;
-const int OBTUSE_ANGLE = 3;
-const int STRAIGHT_ANGLE = 4;
-
-float sqrLength(sf::Vector2f v)
-{
-    return sqr(v.x) + sqr(v.y);
-}
-
-/// checks if a point is on a line segment, assuming the point is already on the line
-bool unsafeOnSeg(const Point &p, const LineSegment &line)
-{
-    return std::min(line.p1.x, line.p2.x) <= p.x && p.x <= std::max(line.p1.x, line.p2.x)
-        && std::min(line.p1.y, line.p2.y) <= p.y && p.y <= std::max(line.p1.y, line.p2.y);
-}
-
-int angleType(Point p1, Point root, Point p2)
-{
-    if (p1 == root || p2 == root) return UNDEFINED_ANGLE;
-    auto v1 = p1 - root;
-    auto v2 = p2 - root;
-    auto in_product = v1.x * v2.x + v1.y * v2.y;
-    auto out_product = v1.x * v2.y - v1.y * v2.x;
-    if (out_product == 0) {
-      if (in_product == 0) return ZERO_ANGLE;
-      return STRAIGHT_ANGLE;
-    }
-    if (in_product > 0) return ACUTE_ANGLE;
-    if (in_product < 0) return OBTUSE_ANGLE;
-    return RIGHT_ANGLE;
-}
-
-int intersectType(const LineSegment line1, const LineSegment line2)
-{
-    float a1 = algebraicArea(line1.p1, line1.p2, line2.p1);
-    float a2 = algebraicArea(line1.p1, line1.p2, line2.p2);
-    if (a1 == 0 && a2 == 0) {
-      if (unsafeOnSeg(line1.p1, line2) || unsafeOnSeg(line1.p2, line2) 
-       || unsafeOnSeg(line2.p1, line1) || unsafeOnSeg(line2.p2, line1))
-        return INTERSECT_OVERLAP;
-      return NO_INTERSECTION;
-    }
-    if (a1 == 0 && unsafeOnSeg(line2.p1, line1)) return INTERSECT_CROSS_TOUCH;
-    if (a2 == 0 && unsafeOnSeg(line2.p2, line1)) return INTERSECT_CROSS_TOUCH;
-    float a3 = algebraicArea(line2.p1, line2.p2, line1.p1);
-    if (a3 == 0 && unsafeOnSeg(line1.p1, line2)) return INTERSECT_CROSS_TOUCH;
-    float a4 = algebraicArea(line2.p1, line2.p2, line1.p2);
-    if (a4 == 0 && unsafeOnSeg(line1.p2, line2)) return INTERSECT_CROSS_TOUCH;
-    if (a1 < 0 != a2 < 0 && a3 < 0 != a4 < 0) return INTERSECT_CROSS;
-    return NO_INTERSECTION;
-}
-
-
-
-bool contains(const IPolygon &polygon, Point point)
-{
-    int vertices = polygon.vertexCount();
-    float max_x = polygon.getVertex(0).x;
-    for (int i = 1; i < vertices; ++i)
-      max_x = std::max(max_x, polygon.getVertex(i).x);
-    LineSegment ray(point, Point(max_x, point.y));
-    int intersect_points = 0;
-    for (int i = 0; i < vertices; ++i)
-      intersect_points += intersectType(polygon.getEdge(i), ray);
-    /// expects intersect_points to be even
-    return intersect_points % 4 == 2;
-}
-
-bool contains(const Circle &circle, Point point)
-{
-    return sqrLength(point - circle.getCenter()) <= sqr(circle.getRadius());
-}
-
-
-bool intersects(const LineSegment &line1, const LineSegment &line2)
-{
-    return intersectType(line1, line2) != NO_INTERSECTION;
-}
-
-bool intersects(const IPolygon &poly1, const IPolygon &poly2)
-{
-    int vertices1 = poly1.vertexCount();
-    int vertices2 = poly2.vertexCount();
-    for (int i = 0; i < vertices1; ++i)
-    for (int j = 0; j < vertices2; ++j)
-      if (intersects(poly1.getEdge(i), poly2.getEdge(j)))
-        return true;
-    return contains(poly1, poly2.getVertex(0)) 
-        || contains(poly2, poly1.getVertex(0));
-}
-
-bool intersects(const Circle &circle1, const Circle &circle2)
-{
-    return sqrLength(circle1.getCenter() - circle2.getCenter()) 
-        <= sqr(circle1.getRadius() + circle2.getRadius());
-}
-
-bool intersects(const LineSegment &line, const IPolygon &poly)
-{
-    int vertices = poly.vertexCount();
-    for (int i = 0; i < vertices; ++i)
-      if (intersects(line, poly.getEdge(i))) return true;
-    return contains(poly, line.p1);
-}
-
-bool intersects(const LineSegment &line, const Circle &circle)
-{
-    if (contains(circle, line.p1) || contains(circle, line.p2)) return true; 
-    float area = algebraicArea(line.p1, line.p2, circle.getCenter());
-    float hypot = area * 2 / length(line);
-    if (hypot > circle.getRadius()) return false;
-    return angleType(line.p1, line.p2, circle.getCenter()) <= RIGHT_ANGLE
-        && angleType(line.p2, line.p1, circle.getCenter()) <= RIGHT_ANGLE;
-}
-
-bool intersects(const IPolygon &poly, const Circle &circle)
-{
-    int vertices = poly.vertexCount();
-    for (int i = 0; i < vertices; ++i)
-      if (intersects(poly.getEdge(i), circle)) return true;
-    return contains(circle, poly.getVertex(0)) 
-        || contains(poly, circle.getCenter());
-}
-
-
-bool intersects(const Shape &lhs, const Shape &rhs)
-{
-    Shape::Id lid = lhs.getId();
-    Shape::Id rid = rhs.getId();
-    if (lid == IPolygon::ID && rid == IPolygon::ID) return intersects(
-        static_cast<const IPolygon&>(lhs), static_cast<const IPolygon&>(rhs));
-    if (lid == Circle::ID && rid == Circle::ID) return intersects(
-        static_cast<const Circle&>(lhs), static_cast<const Circle&>(rhs));
-    if (lid == IPolygon::ID && rid == Circle::ID) return intersects(
-        static_cast<const IPolygon&>(lhs), static_cast<const Circle&>(rhs));
-    if (lid == Circle::ID && rid == IPolygon::ID) return intersects(
-        static_cast<const Circle&>(lhs), static_cast<const IPolygon&>(rhs));
-    throw std::runtime_error("Unsupported shape types");
-}
 
 } // namespace LaserWave

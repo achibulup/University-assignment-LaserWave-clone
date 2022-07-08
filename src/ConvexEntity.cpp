@@ -3,14 +3,14 @@
 namespace LaserWave
 {
 
-void ConvexEntity::draw(sf::RenderTarget &target, sf::RenderStates states) const
+void draw(sf::RenderTarget &target, const IConvexPolygon &poly, 
+          sf::Color color, sf::RenderStates states)
 {
-    auto &&hitbox = this->getHitbox();
-    auto vertices = hitbox.vertexCount();
+    auto vertices = poly.vertexCount();
     sf::ConvexShape shape(vertices);
     for (int i = 0; i < vertices; ++i)
-        shape.setPoint(i, hitbox.getVertex(i));
-    shape.setFillColor(this->getColor());
+      shape.setPoint(i, poly.getVertex(i));
+    shape.setFillColor(color);
     target.draw(shape, states);
 }
 

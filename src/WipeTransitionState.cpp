@@ -6,7 +6,7 @@
 namespace LaserWave
 {
 
-const State::Id WipeTransitionState::ID = "WipeTransition";
+const State::Id WipeTransitionState::ID("WipeTransition");
 
 WipeTransitionState::WipeTransitionState(GameDataRef data, 
     std::vector<StateRequest> after)

@@ -22,8 +22,11 @@ void Game::run()
       while (!this->m_states.empty()) {
         sf::Time elapsed_time = clock.restart();
         lag_accumulator += elapsed_time;
-        if (lag_accumulator > sf::seconds(0.25f)) {
-          lag_accumulator = sf::seconds(0.25f);
+        // if (lag_accumulator > sf::seconds(0.03f)
+        //  && dynamic_cast<const PlayingState*>(&this->m_states.getTopState()))
+        //   throw std::runtime_error("game too slow");
+        if (lag_accumulator > sf::seconds(0.15f)) {
+          lag_accumulator = sf::seconds(0.15f);
         }
         while (lag_accumulator > this->TIME_PER_FRAME) {
           lag_accumulator -= this->TIME_PER_FRAME;
