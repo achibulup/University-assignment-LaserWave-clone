@@ -2,7 +2,7 @@
 #define PLAYER_HPP_INCLUDED
 
 #include "Entity.hpp"
-#include "ConvexEntity.hpp"
+#include "draw_convex.hpp"
 #include "constants.hpp"
 
 namespace LaserWave

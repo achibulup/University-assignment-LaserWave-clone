@@ -86,6 +86,8 @@ class Box
     Point m_topLeft = {};
     Vec2 m_size = {};
 };
+std::ostream& operator<<(std::ostream&, const Box&);
+
 
 Box boundingBox(const LineSegment&);
 

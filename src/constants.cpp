@@ -69,7 +69,11 @@ const float LASER_BEAM_LIFETIME = 0.5f;
 const float LASER_WIDTH = 10.f;
 const float FIRECIRCLE_RADIUS = 25.f;
 const float PLAYER_LASER_START_OFFSET = 13.f;
-const sf::Color LASER_BEAM_COLOR = sf::Color::Yellow;
+const float LASER_BEAM_OUTLINE_WIDTH = 0;
+const sf::Color LASER_BEAM_COLOR = sf::Color(255, 30, 30);
+const sf::Color LASER_BEAM_OUTLINE_COLOR = sf::Color(255, 30, 30);//fsf::Color(0xb0dbffu);//sf::Color(250, 160, 255);
+const sf::Color LASER_BEAM_CIRCLE_COLOR = sf::Color(255, 80, 80);//sf::Color(255, 68, 0);//sf::Color(0xd7ecfeu);
+const sf::Color KICK_COLOR = sf::Color::Yellow;//sf::Color(232, 149, 255);
 
 const sf::Vector2f ENEMY_SPAWN_MARGIN = {60.f, 60.f};
 const sf::Vector2f ENEMY_FILTER_MARGIN = {65.f, 65.f};

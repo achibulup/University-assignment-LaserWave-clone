@@ -34,7 +34,7 @@ sf::Color Player::getColor() const noexcept
 {
     float invincibility_interpolation = this->m_invincibility_timer.asSeconds()
                                       / PLAYER_INVINCIBILITY_DURATION;
-    float color_interpolation = std::cbrt(sqr((invincibility_interpolation)));
+    float color_interpolation = sqr((invincibility_interpolation));
     sf::Color color = {
       PLAYER_COLOR.r + (PLAYER_INVINCIBLE_COLOR.r - PLAYER_COLOR.r) * color_interpolation,
       PLAYER_COLOR.g + (PLAYER_INVINCIBLE_COLOR.g - PLAYER_COLOR.g) * color_interpolation,
@@ -71,7 +71,18 @@ int Player::health() const
 
 void Player::shoot(sf::Vector2f direction)
 {
-    this->m_velocity = -direction * PLAYER_SHOOT_SPEED;
+    direction = -direction;
+    // this->m_velocity = direction * PLAYER_SHOOT_SPEED;
+
+    auto perp = perpendicular(direction);
+    auto old_velocity = this->m_velocity;
+    float proj_len = old_velocity.x * direction.x + old_velocity.y * direction.y;
+    float perp_len = old_velocity.x * perp.x + old_velocity.y * perp.y;
+    float proj_velocity = std::max(proj_len - PLAYER_SHOOT_SPEED, PLAYER_SHOOT_SPEED);
+    float perp_velocity = (perp_len < 0) ? 
+        std::min(0.f, perp_len + PLAYER_SHOOT_SPEED)
+      : std::max(0.f, perp_len - PLAYER_SHOOT_SPEED);
+    this->m_velocity = proj_velocity * direction + perp_velocity * perp;
 }
 
 void Player::kick(sf::Vector2f direction)

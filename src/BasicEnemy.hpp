@@ -3,7 +3,7 @@
 
 #include "Enemy.hpp"
 #include "GameMaths.hpp"
-#include "ConvexEntity.hpp"
+#include "draw_convex.hpp"
 
 namespace LaserWave
 {

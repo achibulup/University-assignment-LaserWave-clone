@@ -75,7 +75,11 @@ extern const float LASER_BEAM_LIFETIME;
 extern const float LASER_WIDTH;
 extern const float FIRECIRCLE_RADIUS;
 extern const float PLAYER_LASER_START_OFFSET;
+extern const float LASER_BEAM_OUTLINE_WIDTH;
 extern const sf::Color LASER_BEAM_COLOR;
+extern const sf::Color LASER_BEAM_OUTLINE_COLOR;
+extern const sf::Color LASER_BEAM_CIRCLE_COLOR;
+extern const sf::Color KICK_COLOR;
 
 extern const float ENEMY_SPAWN_INTERVAL;
 

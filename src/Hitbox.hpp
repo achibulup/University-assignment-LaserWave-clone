@@ -4,6 +4,10 @@
 #include "geometry.hpp"
 #include "gamemaths.hpp"
 
+#include <fstream>
+
+extern std::ofstream log_file;
+
 namespace LaserWave
 {
 
@@ -63,10 +67,7 @@ class StaticHitboxConvex : public StaticHitboxConvexBase INIT_DEBUG_ID(StaticHit
     StaticHitboxConvex(Point center = {});
     StaticHitboxConvex(std::initializer_list<Point> points, Point center = {});
 
-    Shape::Id getId() const noexcept override final
-    {
-        return ID;
-    }
+    Shape::Id getId() const noexcept override final { return ID; }
 
     int vertexCount() const noexcept override final;
 
@@ -160,7 +161,7 @@ class BasicHitboxRef
     explicit BasicHitboxRef(const SHape &shape)
     : m_shape(&shape), m_bound(shape.getBoundingBox()) {}
 
-    BasicHitboxRef(const SHape &shape, Box bounding_box)
+    BasicHitboxRef(const SHape &shape, const Box &bounding_box)
     : m_shape(&shape), m_bound(bounding_box) {}
 
     template<typename SHape2>
@@ -172,8 +173,9 @@ class BasicHitboxRef
         return *this->m_shape;
     }
 
-    const Box& getBoundingBox() const noexcept
+    Box getBoundingBox() const noexcept
     {
+        // ::log_file << this->m_bound;
         return this->m_bound;
     }
 
@@ -225,6 +227,7 @@ class BasicHitbox : public SHape, public HitBoxBoundingBox<BasicHitbox<SHape>>
 
     operator BasicHitboxRef<SHape>() const noexcept
     {
+        // ::log_file << "hitbox->ref: " << this->getBoundingBox() << std::endl;
         return BasicHitboxRef<SHape>(*this, this->getBoundingBox());
     }
     template<class SHape2>

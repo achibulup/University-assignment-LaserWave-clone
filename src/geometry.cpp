@@ -1,7 +1,14 @@
 #include "geometry_impl.hpp"
+#include <iostream>
 
 namespace LaserWave
 {
+
+std::ostream& operator << (std::ostream &out, const Box &box)
+{
+    out << "(" << box.getLeft() << ", " << box.getTop() << ")->(" << box.getRight() << ", " << box.getBottom() << ")";
+    return out;
+}
 
 bool intersects(const LineSegment &line1, const LineSegment &line2)
 {

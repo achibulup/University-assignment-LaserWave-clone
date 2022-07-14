@@ -23,9 +23,19 @@ inline float abs(sf::Vector2f vec)
     return sqrt(vec.x * vec.x + vec.y * vec.y);
 }
 
+inline float sqrLength(sf::Vector2f v)
+{
+    return sqr(v.x) + sqr(v.y);
+}
+
 inline sf::Vector2f normalize(sf::Vector2f vec)
 {
     return vec * rsqrt(vec.x * vec.x + vec.y * vec.y);
+}
+
+inline sf::Vector2f perpendicular(sf::Vector2f vec)
+{
+    return sf::Vector2f(-vec.y, vec.x);
 }
 
 inline int round(float x)

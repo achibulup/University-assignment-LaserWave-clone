@@ -9,8 +9,12 @@
 #include "stateRequests.hpp"
 #include "WipeTransitionState.hpp"
 #include "collisions.hpp"
+#include "debug_utils.hpp"
+
+#include <fstream>
 
 extern bool show_hitbox;
+extern std::ofstream log_file;
 
 namespace LaserWave
 {
@@ -24,47 +28,49 @@ PlayingState::PlayingState(GameDataRef data)
                         this->getWindow().getSize().y / 3.f)),
   m_enemies(),
   m_cursor(&this->getAssets().getCursor(PLAYING_CURSOR)),
-  m_shoot_sound(this->getAssets().getSound(SHOOT_SOUND)),
-  m_kick_sound(this->getAssets().getSound(KICK_SOUND)),
-  m_hit_sound(this->getAssets().getSound(HIT_SOUND)),
-  m_action_pattern(PATTERN),
-  m_gameover_text(GAMEOVER_TEXT, this->getAssets().getFont(GAMEOVER_FONT),
+  m_shootSound(this->getAssets().getSound(SHOOT_SOUND)),
+  m_kickSound(this->getAssets().getSound(KICK_SOUND)),
+  m_hitSound(this->getAssets().getSound(HIT_SOUND)),
+  m_actionIndicator(PATTERN, sf::seconds(1.3f),
+      &this->getAssets().getTexture(SHOOT_ICON_IMAGE),
+      &this->getAssets().getTexture(KICK_ICON_IMAGE)),
+  m_gameoverText(GAMEOVER_TEXT, this->getAssets().getFont(GAMEOVER_FONT),
                   GAMEOVER_FONT_SIZE),
-  m_gameover_sub1_text(GAMEOVER_SUBTITLE1, 
+  m_gameoverSub1Text(GAMEOVER_SUBTITLE1, 
       this->getAssets().getFont(GAMEOVER_FONT), GAMEOVER_SUBTITLE_FONT_SIZE),
-  m_gameover_sub2_text(GAMEOVER_SUBTITLE2, 
+  m_gameoverSub2Text(GAMEOVER_SUBTITLE2, 
       this->getAssets().getFont(GAMEOVER_FONT), GAMEOVER_SUBTITLE_FONT_SIZE)
 {
-    this->m_health_bar.setHealth(this->m_player.health());
-    this->m_shoot_sound.setVolume(50);
+    this->m_healthBar.setHealth(this->m_player.health());
+    this->m_shootSound.setVolume(50);
 
-    this->m_gameover_text.setPosition({
-        this->getWindow().getSize().x / 2 - this->m_gameover_text.getGlobalBounds().width / 2,
+    this->m_gameoverText.setPosition({
+        this->getWindow().getSize().x / 2 - this->m_gameoverText.getGlobalBounds().width / 2,
         GAMEOVER_Y
     });
-    this->m_gameover_text.setFillColor(GAMEOVER_COLOR);
-    this->m_gameover_sub1_text.setPosition({
-        this->getWindow().getSize().x / 2 - this->m_gameover_sub1_text.getGlobalBounds().width / 2,
+    this->m_gameoverText.setFillColor(GAMEOVER_COLOR);
+    this->m_gameoverSub1Text.setPosition({
+        this->getWindow().getSize().x / 2 - this->m_gameoverSub1Text.getGlobalBounds().width / 2,
         GAMEOVER_SUBTITLE1_Y
     });
-    this->m_gameover_sub1_text.setFillColor(GAMEOVER_COLOR);
-    this->m_gameover_sub2_text.setPosition({
-        this->getWindow().getSize().x / 2 - this->m_gameover_sub2_text.getGlobalBounds().width / 2,
+    this->m_gameoverSub1Text.setFillColor(GAMEOVER_COLOR);
+    this->m_gameoverSub2Text.setPosition({
+        this->getWindow().getSize().x / 2 - this->m_gameoverSub2Text.getGlobalBounds().width / 2,
         GAMEOVER_SUBTITLE2_Y
     });
-    this->m_gameover_sub2_text.setFillColor(GAMEOVER_COLOR);
+    this->m_gameoverSub2Text.setFillColor(GAMEOVER_COLOR);
 }
 PlayingState::~PlayingState() = default;
 
 void PlayingState::update(sf::Time dt, EventManager &event)
-{
+{//WHEN_DEBUG(Benchmarker bench("PlayingState::update");)
     if (this->m_state == GameState::PAUSED) return;
 
     if (this->m_state == GameState::PLAYING) {
       this->m_clock.add1Tick();
-      this->m_enemy_spawn_timer += dt;
-      this->m_sound_timer += dt;
-      this->m_action_timer += dt;
+      this->m_enemySpawnTimer += dt;
+      this->m_soundTimer += dt;
+      this->m_actionIndicator.update(dt);
       this->m_player.update(dt);
       this->m_enemies.update(dt);
       this->m_particles.update(dt);
@@ -78,7 +84,7 @@ void PlayingState::update(sf::Time dt, EventManager &event)
 
       this->playHitSound();
 
-      this->m_health_bar.setHealth(this->m_player.health());
+      this->m_healthBar.setHealth(this->m_player.health());
       if (!this->m_player.isAlive()) {
         this->m_state = GameState::OVER;
       }
@@ -88,26 +94,33 @@ void PlayingState::update(sf::Time dt, EventManager &event)
     else if (this->m_state == GameState::OVER) {
       this->m_enemies.update(dt);
       this->m_particles.update(dt);
+      this->m_actionIndicator.update(dt, true);
       this->filterOffScreenEnemies();
     }
     this->processInput(dt, event);
 }
 
 void PlayingState::render() const
-{
+{//WHEN_DEBUG(Benchmarker bench("PlayingState::render");)
     auto &target = this->getWindow();
     target.clear(BACKGROUND_COLOR);
+
     this->m_enemies.drawTo(target);
+
     if (this->m_player.isAlive())
       target.draw(this->m_player);
+
     this->m_particles.drawTo(target);
+
     target.draw(this->m_clock);
-    target.draw(this->m_health_bar);
+    target.draw(this->m_healthBar);
+
+    this->m_actionIndicator.drawTo(target);
 
     if (this->m_state == GameState::OVER) {
-      target.draw(this->m_gameover_text);
-      target.draw(this->m_gameover_sub1_text);
-      target.draw(this->m_gameover_sub2_text);
+      target.draw(this->m_gameoverText);
+      target.draw(this->m_gameoverSub1Text);
+      target.draw(this->m_gameoverSub2Text);
     }
 
     if (::show_hitbox)
@@ -127,27 +140,19 @@ template<typename> class CheckType;
 
 void PlayingState::action()
 {
-  if (this->m_action_pattern.empty()) return;
-  auto next_note = this->m_action_pattern[this->m_action_iter];
-  auto next_action_delay = sf::seconds(next_note.delay);
-  if (this->m_action_timer >= next_action_delay) {
-
-    if (next_note.type == PlayerAction::SHOOT) {
+    auto get_action = this->m_actionIndicator.getPendingAction();
+    if (get_action == PlayerAction::SHOOT) {
       auto mouse_pos = sf::Vector2f(sf::Mouse::getPosition());
       sf::Vector2f direction = mouse_pos - m_player.getCenter();
       direction = normalize(direction);
       this->playerShoot(direction);
     }
-    else if (next_note.type == PlayerAction::KICK) {
+    else if (get_action == PlayerAction::KICK) {
       auto mouse_pos = sf::Vector2f(sf::Mouse::getPosition());
       sf::Vector2f direction = mouse_pos - m_player.getCenter();
       direction = normalize(direction);
       this->playerKick(direction);
     }
-
-    this->m_action_timer -= next_action_delay;
-    this->m_action_iter = (this->m_action_iter + 1) % this->m_action_pattern.size();
-  }
 }
 
 void PlayingState::processInput(sf::Time dt, EventManager &event)
@@ -221,7 +226,7 @@ void PlayingState::randomlySpawnEnemy()
 
 float PlayingState::getEnemySpawnProbability()
 {
-    float sin_time = sin(this->m_enemy_spawn_timer.asSeconds() * 1.8);
+    float sin_time = sin(this->m_enemySpawnTimer.asSeconds() * 1.8);
     return 0.008 + 0.09 * std::pow(sqr(sin_time), 3);
 }
 
@@ -242,8 +247,8 @@ void PlayingState::playerShoot(sf::Vector2f direction)
       const_cast<Enemy&>(*laser_end.hitEnemy).getHit();
     this->m_particles.addParticle(makeUnique<LaserBeam>(
         laser_start_pos, laser_end.position));
-    this->m_shoot_sound.play();
-    this->m_sound_timer = sf::Time::Zero;
+    this->m_shootSound.play();
+    this->m_soundTimer = sf::Time::Zero;
 }
 
 void PlayingState::playerKick(sf::Vector2f direction)
@@ -252,14 +257,14 @@ void PlayingState::playerKick(sf::Vector2f direction)
     this->m_particles.addParticle(makeUnique<KickParticle>(
         this->m_player.getCenter(), toAngle(direction), 
         &this->getAssets().getTexture(KICK_PARTICLE_IMAGE)));
-    this->m_kick_sound.play();
-    this->m_sound_timer = sf::Time::Zero;
+    this->m_kickSound.play();
+    this->m_soundTimer = sf::Time::Zero;
 }
 
 void PlayingState::playerGetHit(sf::Vector2f direction)
 {
     this->m_player.getHit(direction);
-    if (this->m_pending_hit_sound < 1) ++this->m_pending_hit_sound;
+    if (this->m_pendingHitSound < 1) ++this->m_pendingHitSound;
 }
 
 LaserEndPoint PlayingState::
@@ -370,29 +375,36 @@ sf::Vector2f PlayingState::checkPlayerTouchEdge()
     if (touch_right) direction += {-1.f, 0.f};
     if (touch_top) direction += {0.f, 1.f};
     if (touch_bottom) direction += {0.f, -1.f};
-    if (direction != sf::Vector2f{0, 0}) return normalize(direction);
+    if (direction != sf::Vector2f{0, 0}) {
+      // ::log_file << player_box; 
+      return normalize(direction);
+    }
     return direction;
 }
 
 void PlayingState::checkPlayerCollisions()
 {
     for (auto &enemy : this->m_enemies) {
-      if (isColliding(this->m_player, enemy))
+      if (isColliding(this->m_player, enemy)) {
+        // ::log_file << "Player got hit by enemy " << &enemy << std::endl;
         this->playerGetHit(normalize(this->m_player.getCenter() - enemy.getCenter())); 
+      }
     }
   
     auto direction = this->checkPlayerTouchEdge();
-    if (direction != sf::Vector2f(0, 0)) 
+    if (direction != sf::Vector2f(0, 0)) {
+      // ::log_file << "Player touched edge" << std::endl;
       this->playerGetHit(direction);
+    }
 }
 
 void PlayingState::playHitSound()
 {
-    if (this->m_pending_hit_sound > 0 
-      && this->m_sound_timer.asSeconds() > 0.3f) {
-      this->m_hit_sound.play();
-      this->m_sound_timer = sf::Time::Zero;
-      this->m_pending_hit_sound--;
+    if (this->m_pendingHitSound > 0 
+      && this->m_soundTimer.asSeconds() > 0.3f) {
+      this->m_hitSound.play();
+      this->m_soundTimer = sf::Time::Zero;
+      this->m_pendingHitSound--;
     }
 }
 

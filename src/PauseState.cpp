@@ -4,6 +4,7 @@
 #include "PlayingState.hpp"
 #include "WipeTransitionState.hpp"
 #include "stateRequests.hpp"
+#include "draw_convex.hpp"
 
 namespace LaserWave
 {
@@ -82,10 +83,10 @@ void PauseState::update(sf::Time dt, EventManager &event)
 void PauseState::render() const
 {
     ///fill the screen
-    sf::RectangleShape rect;
+    Rect rect;
     rect.setSize({this->getWindow().getSize().x, this->getWindow().getSize().y});
     rect.setPosition({0, 0});
-    rect.setFillColor(PAUSE_FILTER);
+    rect.setColor(PAUSE_FILTER);
     this->getWindow().draw(rect);
 
     this->getWindow().draw(m_pause_text);

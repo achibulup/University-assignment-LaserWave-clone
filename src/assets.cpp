@@ -12,6 +12,8 @@ const AssetId GAMECLOCK_FONT ("GAMECLOCK-FONT");
 const AssetId CLICK_FONT ("CLICK-FONT");
 const AssetId DEFAULT_CURSOR ("DEFAULT-CURSOR");
 const AssetId PLAYING_CURSOR ("PLAYING-CURSOR");
+const AssetId SHOOT_ICON_IMAGE ("SHOOT-ICON-IMAGE");
+const AssetId KICK_ICON_IMAGE ("KICK-ICON-IMAGE");
 const AssetId KICK_PARTICLE_IMAGE ("KICK-PARTICLE-IMAGE");
 const AssetId SHOOT_SOUND ("SHOOT-SOUND");
 const AssetId KICK_SOUND ("KICK-SOUND");
@@ -27,12 +29,19 @@ const AssetId MENU_BUTTON ("MENU-BUTTON");
 const AssetId MENU_BUTTON_HOVER ("MENU-BUTTON-HOVER");
 const AssetId GAMEOVER_FONT ("GAMEOVER-FONT");
 
+
+
 const char *const ICON_PATH = "assets/images/SFML-icon.png";
 
 void loadAssets(AssetManager &asset)
 {
     asset.loadTexture(SFML_LOGO, "assets/images/SFML-logo.png");
-    asset.loadTexture(KICK_PARTICLE_IMAGE, "assets/images/kick.png");
+    asset.loadTexture(SHOOT_ICON_IMAGE, "assets/images/shoot-icon.png");
+    asset.loadTexture(KICK_ICON_IMAGE, "assets/images/kick-icon.png");
+    asset.loadTexture(KICK_PARTICLE_IMAGE, "assets/images/kick.png", 
+        [](sf::Texture &texture){
+            texture.setSmooth(true);
+        });
     asset.loadTexture(EXIT_BUTTON, "assets/images/exit-default.png");
     asset.loadTexture(EXIT_BUTTON_HOVER, "assets/images/exit-hover.png");
     asset.loadTexture(RESUME_BUTTON, "assets/images/resume-default.png");

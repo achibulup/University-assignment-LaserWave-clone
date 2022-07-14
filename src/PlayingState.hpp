@@ -68,22 +68,20 @@ class PlayingState : public State INIT_DEBUG_ID(PlayingState)
     }m_state = GameState::PLAYING;
     GameClock m_clock;
     Particles m_particles;
-    HealthBar m_health_bar;
+    HealthBar m_healthBar;
     Player m_player;
     Enemies m_enemies;
     const sf::Cursor *m_cursor;
-    sf::Time m_enemy_spawn_timer;
-    sf::Sound m_shoot_sound;
-    sf::Sound m_kick_sound;
-    sf::Sound m_hit_sound;
-    sf::Time m_sound_timer = sf::Time::Zero;
-    int m_pending_hit_sound = 0;
-    sf::Time m_action_timer = sf::Time::Zero;
-    List<DrumNote> m_action_pattern;
-    int m_action_iter = 0;
-    sf::Text m_gameover_text;
-    sf::Text m_gameover_sub1_text;
-    sf::Text m_gameover_sub2_text;
+    sf::Time m_enemySpawnTimer;
+    sf::Sound m_shootSound;
+    sf::Sound m_kickSound;
+    sf::Sound m_hitSound;
+    sf::Time m_soundTimer = sf::Time::Zero;
+    int m_pendingHitSound = 0;
+    ActionIndicator m_actionIndicator;
+    sf::Text m_gameoverText;
+    sf::Text m_gameoverSub1Text;
+    sf::Text m_gameoverSub2Text;
 };
 
 } // namespace LaserWave

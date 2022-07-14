@@ -2,7 +2,11 @@
 #include "EventManager.hpp"
 #include "SplashState.hpp"
 #include "assets.hpp"
+#include "debug_utils.hpp"
 #include <fstream>
+
+extern std::ofstream log_file;
+
 namespace LaserWave
 {
 
@@ -18,13 +22,16 @@ void Game::run()
 {
     sf::Clock clock;
     sf::Time lag_accumulator = sf::Time::Zero;
+
     try {
       while (!this->m_states.empty()) {
         sf::Time elapsed_time = clock.restart();
         lag_accumulator += elapsed_time;
-        // if (lag_accumulator > sf::seconds(0.03f)
-        //  && dynamic_cast<const PlayingState*>(&this->m_states.getTopState()))
-        //   throw std::runtime_error("game too slow");
+
+        WHEN_DEBUG(if (lag_accumulator > this->TIME_PER_FRAME * 2.f)
+            ::log_file << this->m_states.getTopState().m_id.getString() 
+                       << " " << lag_accumulator.asSeconds() << std::endl;)
+
         if (lag_accumulator > sf::seconds(0.15f)) {
           lag_accumulator = sf::seconds(0.15f);
         }
@@ -33,6 +40,7 @@ void Game::run()
           EventManager events(this->getEvents());
           this->update(this->TIME_PER_FRAME, events);
         }
+
         if (this->m_states.empty()) break;
         this->updateScreen();
       }
@@ -85,7 +93,7 @@ void Game::updateScreen()
         state.render();
       }
     }
-    this->m_window.display();
+    BENCHMARK_IF_DEBUG(this->m_window.display());
 }
 
 State& Game::getActiveState()

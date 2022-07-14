@@ -17,6 +17,8 @@ extern const AssetId CLICK_FONT;
 extern const AssetId GAMECLOCK_FONT;
 extern const AssetId DEFAULT_CURSOR;
 extern const AssetId PLAYING_CURSOR;
+extern const AssetId SHOOT_ICON_IMAGE;
+extern const AssetId KICK_ICON_IMAGE;
 extern const AssetId KICK_PARTICLE_IMAGE;
 extern const AssetId SHOOT_SOUND;
 extern const AssetId KICK_SOUND;
@@ -38,7 +40,7 @@ void loadAssets(AssetManager &asset);
 
 SimpleButton makeButton(const sf::Texture *texture, sf::Vector2f pos = {},
                         SimpleButton::OnClickFunctor on_click = {},
-                        const sf::Texture *hover_texture = nullptr);
+                        const sf::Texture *hover_texture = {});
 
 
 extern const float LOOP_LENGTH;

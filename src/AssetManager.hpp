@@ -5,6 +5,7 @@
 #include "IdTemplate.hpp"
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
+#include <functional>
 #include <string>
 #include <map>
 
@@ -20,20 +21,25 @@ class AssetId : public IdTemplate<AssetId>
 class AssetManager
 {
   public:
+    using TextureInit = std::function<void(sf::Texture&)>;
+    using CursorInit = std::function<void(sf::Cursor&)>;
+    using FontInit = std::function<void(sf::Font&)>;
+    using SoundInit = std::function<void(sf::SoundBuffer&)>;
+
     AssetManager();
 
-    void loadTexture(AssetId, std::string fileName);
-    void loadTexture(AssetId, const sf::Texture &copy);
+    void loadTexture(AssetId, std::string fileName, const TextureInit &init = {});
+    void loadTexture(AssetId, const sf::Texture &copy, const TextureInit &init = {});
     const sf::Texture& getTexture(AssetId) const;
 
-    void loadCursor(AssetId, std::string fileName, sf::Vector2u hotSpot);
-    void loadCursor(AssetId, sf::Cursor::Type);
+    void loadCursor(AssetId, std::string fileName, sf::Vector2u hotSpot, const CursorInit &init = {});
+    void loadCursor(AssetId, sf::Cursor::Type, const CursorInit &init = {});
     const sf::Cursor& getCursor(AssetId) const;
 
-    void loadFont(AssetId, std::string fileName);
+    void loadFont(AssetId, std::string fileName, const FontInit &init = {});
     const sf::Font& getFont(AssetId) const;
 
-    void loadSound(AssetId, std::string fileName);
+    void loadSound(AssetId, std::string fileName, const SoundInit &init = {});
     const sf::SoundBuffer& getSound(AssetId) const;
 
   private:

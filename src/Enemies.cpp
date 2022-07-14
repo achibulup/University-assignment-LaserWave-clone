@@ -2,6 +2,9 @@
 #include "BasicEnemy.hpp"
 #include "constants.hpp"
 #include "GameMaths.hpp"
+#include "randoms.hpp"
+
+#include <algorithm>
 
 namespace LaserWave
 {
@@ -38,15 +41,17 @@ void Enemies::drawTo(sf::RenderTarget &target, sf::RenderStates states) const
 void Enemies::addRandomEnemy(sf::Vector2f position, sf::Vector2f player_pos)
 {
     sf::Vector2f direction = normalize(player_pos - position);
-    sf::Vector2f velocity = direction * BASIC_ENEMY_SPEED;
+    Angle rand_angle = toAngle(direction) + Angle::fromDegrees(randInt(-10, 10));
+    sf::Vector2f velocity = toDirection(rand_angle) * BASIC_ENEMY_SPEED;
     this->addEnemy(makeUnique<BasicEnemy>(position, velocity));
 }
 
 void Enemies::filterDeadEnemies()
 {
-    for (int i = this->m_enemies.size(); i --> 0;)
-      if (!this->m_enemies[i]->isAlive())
-        this->m_enemies.erase(this->m_enemies.begin() + i);
+    this->m_enemies.erase(
+        std::remove_if(this->m_enemies.begin(), this->m_enemies.end(),
+            [](const Unique<Enemy> &enemy) { return !enemy->isAlive(); }),
+        this->m_enemies.end());
 }
 
 void Enemies::addEnemy(Unique<Enemy> enemy)
