@@ -74,11 +74,11 @@ auto makeImageDrawer(PixelDrawer &&drawer)
             };
 }
 
-using ErasedPixlesDrawer = std::function<void(int, int, sf::Color*)>;
+using ErasedPixelsDrawer = std::function<void(int, int, sf::Color*)>;
 using ErasedImageDrawer = std::function<void(sf::Image&)>;
 
-sf::Texture makeTextureImpl(int width, int height, ErasedPixlesDrawer drawer);
-sf::Image makeImageImpl(int width, int height, ErasedPixlesDrawer drawer);
+sf::Texture makeTextureImpl(int width, int height, ErasedPixelsDrawer drawer);
+sf::Image makeImageImpl(int width, int height, ErasedPixelsDrawer drawer);
 
 
 /// make a \a width * \a height texture and draw each pixel with \a pixel_drawer
