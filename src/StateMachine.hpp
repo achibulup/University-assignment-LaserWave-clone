@@ -63,7 +63,7 @@ class StateMachine
     }
 
   private:
-    void processRequest(StateRequest request);
+    void processRequest(const StateRequest &request);
 
     Achibulup::PolymorphicStack<State> m_states;
     GameDataRef m_data;

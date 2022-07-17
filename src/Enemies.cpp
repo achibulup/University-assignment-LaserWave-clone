@@ -48,10 +48,10 @@ void Enemies::addRandomEnemy(sf::Vector2f position, sf::Vector2f player_pos)
 
 void Enemies::filterDeadEnemies()
 {
-    this->m_enemies.erase(
-        std::remove_if(this->m_enemies.begin(), this->m_enemies.end(),
-            [](const Unique<Enemy> &enemy) { return !enemy->isAlive(); }),
-        this->m_enemies.end());
+    removeIf(this->m_enemies, [](const Unique<Enemy> &enemy) 
+        { 
+            return !enemy->isAlive(); 
+        });
 }
 
 void Enemies::addEnemy(Unique<Enemy> enemy)

@@ -1,37 +1,121 @@
-#include "PlayingState.hpp"
+#include "State.hpp"
+#include "Player.hpp"
+#include "Enemies.hpp"
+#include "GameClock.hpp"
+#include "HealthBar.hpp"
+#include "Particles.hpp"
+#include "ActionIndicator.hpp"
 #include "GameMaths.hpp"
-#include "constants.hpp"
-#include "randoms.hpp"
 #include "assets.hpp"
 #include "KickParticle.hpp"
 #include "LaserBeam.hpp"
-#include "PauseState.hpp"
+
 #include "stateRequests.hpp"
-#include "WipeTransitionState.hpp"
+#include "constants.hpp"
+#include "randoms.hpp"
 #include "collisions.hpp"
 #include "debug_utils.hpp"
+#include "ScoreSystem.hpp"
+#include <SFML/Audio.hpp>
 
 #include <fstream>
-
 extern bool show_hitbox;
 extern std::ofstream log_file;
 
 namespace LaserWave
 {
 
-const State::Id PlayingState::ID("Playing");
+struct LaserEndPoint
+{
+    Vec2 position;
+    const Enemy *hitEnemy;
+};
+
+class PlayingState : public State INIT_DEBUG_ID(PlayingState)
+{
+  public:
+    static const State::Id ID;
+
+    explicit PlayingState(GameDataRef data);
+    PlayingState(const PlayingState&) = delete;
+    void operator = (PlayingState) = delete;
+    ~PlayingState();
+
+    State::Id getId() const noexcept override
+    {
+        return ID;
+    }
+
+    // void init() override;
+    void update(sf::Time dt, EventManager &event) override;
+    void render() const override;
+
+    void asTopState() override;
+
+    sf::String getPlayingTime() const;
+
+  private:
+    void processInput(sf::Time dt, EventManager &event);
+    void randomlySpawnEnemy();
+    void filterOffScreenEnemies();
+    void checkPlayerCollisions();
+    void action();
+    void triggerGameOver();
+    void requestPause();
+    void requestRestart();
+    void requestMenu();
+    void playerShoot(Vec2 direction);
+    void playerKick(Vec2 direction);
+    void playerGetHit(Vec2 direction);
+    void playHitSound();
+    float getEnemySpawnProbability();
+    Vec2 getRandomSpawnPosition() const;
+    void spawnEnemy();
+    bool isFiltered(const Entity&) const;
+    LaserEndPoint castLaser(Vec2 position, Vec2 direction) const;
+    Vec2 checkPlayerTouchEdge();
+
+    enum class GameState {
+      PLAYING,
+      PAUSED,
+      OVER,
+    }m_state = GameState::PLAYING;
+    GameClock m_clock;
+    Particles m_particles;
+    HealthBar m_healthBar;
+    Player m_player;
+    Enemies m_enemies;
+    const sf::Cursor *m_cursor;
+    sf::Time m_enemySpawnTimer;
+    sf::Sound m_shootSound;
+    sf::Sound m_kickSound;
+    sf::Sound m_hitSound;
+    sf::Time m_soundTimer = sf::Time::Zero;
+    int m_pendingHitSound = 0;
+    ActionIndicator m_actionIndicator;
+    sf::Text m_gameoverText;
+    sf::Text m_gameoverSub1Text;
+    sf::Text m_gameoverSub2Text;
+};
+const State::Id PlayingState::ID("PlayingState");
+const State::Id PLAYINGSTATE_ID = PlayingState::ID;
+
+
+template StateRequest makePushRequest<PlayingState>();
+
+
 
 PlayingState::PlayingState(GameDataRef data) 
 : State(data),
   m_clock(GAMECLOCK_POS, &this->getAssets().getFont(GAMECLOCK_FONT)),
-  m_player(sf::Vector2f(this->getWindow().getSize().x / 2.f, 
+  m_player(Vec2(this->getWindow().getSize().x / 2.f, 
                         this->getWindow().getSize().y / 3.f)),
   m_enemies(),
   m_cursor(&this->getAssets().getCursor(PLAYING_CURSOR)),
   m_shootSound(this->getAssets().getSound(SHOOT_SOUND)),
   m_kickSound(this->getAssets().getSound(KICK_SOUND)),
   m_hitSound(this->getAssets().getSound(HIT_SOUND)),
-  m_actionIndicator(PATTERN, sf::seconds(1.3f),
+  m_actionIndicator(PATTERN, sf::seconds(INDICATOR_DISPLAY_TIME),
       &this->getAssets().getTexture(SHOOT_ICON_IMAGE),
       &this->getAssets().getTexture(KICK_ICON_IMAGE)),
   m_gameoverText(GAMEOVER_TEXT, this->getAssets().getFont(GAMEOVER_FONT),
@@ -86,7 +170,7 @@ void PlayingState::update(sf::Time dt, EventManager &event)
 
       this->m_healthBar.setHealth(this->m_player.health());
       if (!this->m_player.isAlive()) {
-        this->m_state = GameState::OVER;
+        this->triggerGameOver();
       }
 
       this->action();
@@ -136,20 +220,31 @@ void PlayingState::asTopState()
     this->getWindow().setMouseCursor(*this->m_cursor);
 }
 
+sf::String PlayingState::getPlayingTime() const
+{
+    return this->m_clock.toString();
+}
+
+
+
+
+
+
+
 template<typename> class CheckType;
 
 void PlayingState::action()
 {
     auto get_action = this->m_actionIndicator.getPendingAction();
     if (get_action == PlayerAction::SHOOT) {
-      auto mouse_pos = sf::Vector2f(sf::Mouse::getPosition());
-      sf::Vector2f direction = mouse_pos - m_player.getCenter();
+      auto mouse_pos = Vec2(sf::Mouse::getPosition());
+      Vec2 direction = mouse_pos - this->m_player.getCenter();
       direction = normalize(direction);
       this->playerShoot(direction);
     }
     else if (get_action == PlayerAction::KICK) {
-      auto mouse_pos = sf::Vector2f(sf::Mouse::getPosition());
-      sf::Vector2f direction = mouse_pos - m_player.getCenter();
+      auto mouse_pos = Vec2(sf::Mouse::getPosition());
+      Vec2 direction = mouse_pos - this->m_player.getCenter();
       direction = normalize(direction);
       this->playerKick(direction);
     }
@@ -186,6 +281,12 @@ void PlayingState::processInput(sf::Time dt, EventManager &event)
     }
 }
 
+void PlayingState::triggerGameOver()
+{
+    this->m_state = GameState::OVER;
+    this->getScoreSystem().addScore(this->m_clock.toString());
+}
+
 void PlayingState::requestPause()
 {
     this->m_state = GameState::PAUSED;
@@ -197,10 +298,7 @@ void PlayingState::requestRestart()
     auto restart_request = makeRequests(makePopRequest(),
                                         makePushRequest<PlayingState>());
     this->addStateRequest(
-        [reqs = std::move(restart_request)] (StateMachine &machine) {
-            machine.pushState<WipeTransitionState>(std::move(reqs));
-        }
-    );
+        makePushRequest<WipeTransitionState>(std::move(restart_request)));
 }
 
 void PlayingState::requestMenu()
@@ -218,9 +316,8 @@ void PlayingState::filterOffScreenEnemies()
 
 void PlayingState::randomlySpawnEnemy()
 {
-    if (decide(this->getEnemySpawnProbability())) {
+    if (decide(this->getEnemySpawnProbability()))
       this->spawnEnemy();
-    }
 }
 
 
@@ -232,15 +329,15 @@ float PlayingState::getEnemySpawnProbability()
 
 void PlayingState::spawnEnemy()
 {
-    sf::Vector2f spawn_pos = this->getRandomSpawnPosition();
-    sf::Vector2f player_position = this->m_player.getCenter();
+    Vec2 spawn_pos = this->getRandomSpawnPosition();
+    Vec2 player_position = this->m_player.getCenter();
     this->m_enemies.addRandomEnemy(spawn_pos, player_position);
 }
 
-void PlayingState::playerShoot(sf::Vector2f direction)
+void PlayingState::playerShoot(Vec2 direction)
 {
     this->m_player.shoot(direction);
-    sf::Vector2f laser_start_pos 
+    Vec2 laser_start_pos 
         = this->m_player.getCenter() + direction * PLAYER_LASER_START_OFFSET;
     auto laser_end = this->castLaser(laser_start_pos, direction);
     if (laser_end.hitEnemy) 
@@ -251,7 +348,7 @@ void PlayingState::playerShoot(sf::Vector2f direction)
     this->m_soundTimer = sf::Time::Zero;
 }
 
-void PlayingState::playerKick(sf::Vector2f direction)
+void PlayingState::playerKick(Vec2 direction)
 {
     this->m_player.kick(direction);
     this->m_particles.addParticle(makeUnique<KickParticle>(
@@ -261,14 +358,14 @@ void PlayingState::playerKick(sf::Vector2f direction)
     this->m_soundTimer = sf::Time::Zero;
 }
 
-void PlayingState::playerGetHit(sf::Vector2f direction)
+void PlayingState::playerGetHit(Vec2 direction)
 {
     this->m_player.getHit(direction);
     if (this->m_pendingHitSound < 1) ++this->m_pendingHitSound;
 }
 
-LaserEndPoint PlayingState::
-castLaser(sf::Vector2f position, sf::Vector2f direction) const
+LaserEndPoint PlayingState::castLaser(
+                              Vec2 position, Vec2 direction) const
 {
     using LaserFront = RegularHitboxConvex;
     auto getHitEnemy = [&] (const LaserFront &laser_front) {
@@ -279,7 +376,7 @@ castLaser(sf::Vector2f position, sf::Vector2f direction) const
       }
       return static_cast<const Enemy*>(nullptr);
     };
-    auto calcLaserFrontSize = [] (sf::Vector2f direction, float laser_width) {
+    auto calcLaserFrontSize = [] (Vec2 direction, float laser_width) {
         return laser_width / 2;
     };
     auto outOfScreen = [&] (const LaserFront &laser_front) {
@@ -321,7 +418,7 @@ bool PlayingState::isFiltered(const Entity &entity) const
         || entity.getCenter().y > BOTTOM_Y;
 }
 
-sf::Vector2f PlayingState::getRandomSpawnPosition() const
+Vec2 PlayingState::getRandomSpawnPosition() const
 {
     ///get a random position outside the window
     const float TOP_Y = -ENEMY_FILTER_MARGIN.y;
@@ -335,7 +432,7 @@ sf::Vector2f PlayingState::getRandomSpawnPosition() const
         BOTTOM_OR_RIGHT
     };
     Side side = Side(randInt(0, 1));
-    sf::Vector2f res;
+    Vec2 res;
     switch (side) {
       case TOP_OR_LEFT:
         res = {LEFT_X, TOP_Y};
@@ -356,7 +453,7 @@ sf::Vector2f PlayingState::getRandomSpawnPosition() const
     return res;
 }
 
-sf::Vector2f PlayingState::checkPlayerTouchEdge() 
+Vec2 PlayingState::checkPlayerTouchEdge() 
 {
     const float TOP_Y = 10;
     const float BOTTOM_Y = this->getWindow().getSize().y - 10;
@@ -370,12 +467,12 @@ sf::Vector2f PlayingState::checkPlayerTouchEdge()
     bool touch_top = player_box.getTop() < TOP_Y;
     bool touch_bottom = player_box.getBottom() > BOTTOM_Y;
       
-    sf::Vector2f direction = {0, 0};
+    Vec2 direction = {0, 0};
     if (touch_left) direction += {1.f, 0.f};
     if (touch_right) direction += {-1.f, 0.f};
     if (touch_top) direction += {0.f, 1.f};
     if (touch_bottom) direction += {0.f, -1.f};
-    if (direction != sf::Vector2f{0, 0}) {
+    if (direction != Vec2{0, 0}) {
       // ::log_file << player_box; 
       return normalize(direction);
     }
@@ -392,7 +489,7 @@ void PlayingState::checkPlayerCollisions()
     }
   
     auto direction = this->checkPlayerTouchEdge();
-    if (direction != sf::Vector2f(0, 0)) {
+    if (direction != Vec2(0, 0)) {
       // ::log_file << "Player touched edge" << std::endl;
       this->playerGetHit(direction);
     }
@@ -407,5 +504,6 @@ void PlayingState::playHitSound()
       this->m_pendingHitSound--;
     }
 }
+
 
 } // namespace LaserWave

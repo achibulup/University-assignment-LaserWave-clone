@@ -2,7 +2,7 @@
 #define ENEMY_HPP_INCLUDED
 
 #include "Entity.hpp"
-#include <SFML/Achibulup_dependencies/common_utils.h>
+#include <SFML/Achibulup_dependencies/common_utils.hpp>
 
 namespace LaserWave
 {

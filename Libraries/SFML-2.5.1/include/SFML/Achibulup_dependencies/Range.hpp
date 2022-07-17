@@ -1,7 +1,7 @@
 #ifndef RANGE_HPP_INCLUDED
 #define RANGE_HPP_INCLUDED
 
-#include "common_utils.h"
+#include "common_utils.hpp"
 #include <type_traits>
 #include <iterator>
 

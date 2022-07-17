@@ -21,7 +21,7 @@ bin\LaserWave.exe: \
     obj\draw_convex.o obj\Enemies.o obj\Entity.o obj\EventManager.o\
     obj\Game.o obj\GameClock.o obj\GameDataRef.o\
     obj\geometry.o obj\geometry_impl.o obj\HealthBar.o obj\Hitbox.o obj\KickParticle.o obj\LaserBeam.o\
-    obj\MenuState.o obj\Particles.o obj\PauseState.o obj\Player.o\
+    obj\MenuState.o obj\ScoreSystem.o obj\Particles.o obj\paths.o obj\PauseState.o obj\Player.o\
     obj\PlayingState.o obj\randoms.o obj\SimpleGUI.o obj\SplashState.o\
     obj\StateMachine.o obj\stateRequests.o obj\WipeTransitionState.o
 	$(COMPILER) -o "bin\LaserWave.exe"\
@@ -29,8 +29,8 @@ bin\LaserWave.exe: \
     "obj\draw_convex.o"\
     "obj\Entity.o" "obj\Enemies.o" "obj\EventManager.o"\
     "obj\Game.o" "obj\GameClock.o" "obj\GameDataRef.o" "obj\geometry.o" "obj\geometry_impl.o" "obj\HealthBar.o"\
-    "obj\Hitbox.o" "obj\KickParticle.o" "obj\Laserbeam.o" "obj\MenuState.o" "obj\Particles.o"\
-    "obj\PauseState.o" "obj\Player.o" "obj\PlayingState.o" "obj\randoms.o"\
+    "obj\Hitbox.o" "obj\KickParticle.o" "obj\Laserbeam.o" "obj\MenuState.o" "obj\ScoreSystem.o" "obj\Particles.o"\
+    "obj\paths.o" "obj\PauseState.o" "obj\Player.o" "obj\PlayingState.o" "obj\randoms.o"\
     "obj\SimpleGUI.o" "obj\SplashState.o" "obj\StateMachine.o"\
     "obj\stateRequests.o" "obj\WipeTransitionState.o"\
     $(LIBRARY_PATHS) $(LIBRARIES) -Wl,-subsystem,windows
@@ -105,8 +105,14 @@ obj\LaserBeam.o: src\LaserBeam.cpp
 obj\MenuState.o: src\MenuState.cpp
 	$(MAKE) compile UNIT_NAME=MenuState
 
+obj\ScoreSystem.o: src\ScoreSystem.cpp
+	$(MAKE) compile UNIT_NAME=ScoreSystem
+
 obj\Particles.o: src\Particles.cpp
 	$(MAKE) compile UNIT_NAME=Particles
+
+obj\paths.o: src\paths.cpp
+	$(MAKE) compile UNIT_NAME=paths
 
 obj\PauseState.o: src\PauseState.cpp
 	$(MAKE) compile UNIT_NAME=PauseState
@@ -202,10 +208,10 @@ src\EventManager.cpp: src\EventManager.hpp
 src\EventManager.hpp: src\commons.hpp
 	touch src\EventManager.hpp
 
-src\Game.cpp: src\Game.hpp src\EventManager.hpp src\assets.hpp src\SplashState.hpp 
+src\Game.cpp: src\Game.hpp src\EventManager.hpp src\assets.hpp src\stateRequests.hpp
 	touch src\Game.cpp
 
-src\Game.hpp: src\State.hpp src\StateMachine.hpp src\AssetManager.hpp
+src\Game.hpp: src\State.hpp src\StateMachine.hpp src\AssetManager.hpp src\ScoreSystem.hpp
 	touch src\Game.hpp
 
 src\GameClock.cpp: src\GameClock.hpp
@@ -253,12 +259,15 @@ src\LaserBeam.cpp: src\LaserBeam.hpp src\draw_convex.hpp
 src\LaserBeam.hpp: src\Particle.hpp
 	touch src\LaserBeam.hpp
 
-src\MenuState.cpp: src\MenuState.hpp src\WipeTransitionState.hpp\
-                   src\stateRequests.hpp src\assets.hpp src\PlayingState.hpp
+src\MenuState.cpp: src\State.hpp src\SimpleGUI.hpp\
+                   src\stateRequests.hpp src\assets.hpp
 	touch src\MenuState.cpp
 
-src\MenuState.hpp: src\State.hpp src\SimpleGUI.hpp
-	touch src\MenuState.hpp
+src\ScoreSystem.cpp: src\ScoreSystem.hpp
+	touch src\ScoreSystem.cpp
+
+src\ScoreSystem.hpp: src\commons.hpp src\Score.hpp
+	touch src\ScoreSystem.hpp
 
 src\Particles.cpp: src\Particles.hpp
 	touch src\Particles.cpp
@@ -266,13 +275,14 @@ src\Particles.cpp: src\Particles.hpp
 src\Particles.hpp: src\Particle.hpp src\commons.hpp
 	touch src\Particles.hpp
 
-src\PauseState.cpp: src\PauseState.hpp src\WipeTransitionState.hpp\
-                    src\stateRequests.hpp src\assets.hpp src\PlayingState.hpp\
-                    src\draw_convex.hpp
-	touch src\PauseState.cpp
+src\paths.cpp: src\paths.hpp
+	touch src\paths.cpp
 
-src\PauseState.hpp: src\State.hpp src\SimpleGUI.hpp
-	touch src\PauseState.hpp
+src\paths.hpp: 
+
+src\PauseState.cpp: src\State.hpp src\SimpleGUI.hpp src\stateRequests.hpp\
+                    src\assets.hpp src\draw_convex.hpp
+	touch src\PauseState.cpp
 
 src\Player.cpp: src\Player.hpp
 	touch src\Player.cpp
@@ -280,15 +290,12 @@ src\Player.cpp: src\Player.hpp
 src\Player.hpp: src\draw_convex.hpp src\Entity.hpp
 	touch src\Player.hpp
 
-src\PlayingState.cpp: src\PlayingState.hpp src\collisions.hpp\
+src\PlayingState.cpp: src\State.hpp src\Player.hpp src\HealthBar.hpp src\Enemies.hpp\
+    src\GameClock.hpp src\Particles.hpp src\ActionIndicator.hpp src\collisions.hpp\
     src\KickParticle.hpp src\Particles.hpp src\LaserBeam.hpp\
     src\Enemies.hpp src\BasicEnemy.hpp src\stateRequests.hpp src\assets.hpp\
-    src\PauseState.hpp src\WipeTransitionState.hpp
+    src\ScoreSystem.hpp
 	touch src\PlayingState.cpp
-
-src\PlayingState.hpp: src\State.hpp src\Player.hpp src\HealthBar.hpp src\Enemies.hpp\
-                      src\GameClock.hpp src\Particles.hpp src\ActionIndicator.hpp
-	touch src\PlayingState.hpp
 
 src\randoms.cpp: src\randoms.hpp
 	touch src\randoms.cpp
@@ -301,11 +308,8 @@ src\SimpleGUI.cpp: src\SimpleGUI.hpp
 src\SimpleGUI.hpp: src\EventManager.hpp src\SimpleButton.hpp
 	touch src\SimpleGUI.hpp
 
-src\SplashState.cpp: src\SplashState.hpp src\stateRequests.hpp src\assets.hpp src\MenuState.hpp
+src\SplashState.cpp: src\State.hpp src\stateRequests.hpp src\assets.hpp
 	touch src\SplashState.cpp
-
-src\SplashState.hpp: src\State.hpp
-	touch src\SplashState.hpp
 
 src\State.hpp: src\GameDataRef.hpp src\commons.hpp src\EventManager.hpp
 	touch src\State.hpp
@@ -322,10 +326,6 @@ src\stateRequests.cpp: src\stateRequests.hpp
 src\stateRequests.hpp: src\StateMachine.hpp
 	touch src\stateRequests.hpp
 
-src\WipeTransitionState.cpp: src\WipeTransitionState.hpp src\stateRequests.hpp
+src\WipeTransitionState.cpp: src\State.hpp src\stateRequests.hpp
 	touch src\WipeTransitionState.cpp
-
-src\WipeTransitionState.hpp: src\State.hpp
-	touch src\WipeTransitionState.hpp
-
 

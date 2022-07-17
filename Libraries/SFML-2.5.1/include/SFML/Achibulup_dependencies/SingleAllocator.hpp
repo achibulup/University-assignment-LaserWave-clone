@@ -53,6 +53,16 @@ class SingleDeallocator
     SingleAllocatorResource *m_resource;
 };
 
+
+template<std::size_t size, std::size_t alignment = alignof(std::max_align_t)>
+struct StaticSizeAlignMemSource
+{
+    static SingleAllocatorResource resource;
+};
+template<std::size_t size, std::size_t alignment>
+SingleAllocatorResource StaticSizeAlignMemSource<size, alignment>::resource;
+
+
 template<typename Tp>
 class SingleAllocator
 {
@@ -91,36 +101,36 @@ class SingleAllocator
     }
 
   private:
-    static SingleAllocatorResource s_sharedResource;
+    static constexpr SingleAllocatorResource &s_sharedResource 
+        = StaticSizeAlignMemSource<sizeof(Tp), alignof(Tp)>::resource;
 };
-template<typename Tp>
-SingleAllocatorResource SingleAllocator<Tp>::s_sharedResource;
 
 class SADeleter
 {
+    using Destroyer = void(*)(void*);
+
   public:
-    constexpr SADeleter() noexcept : m_derived(), m_deal() {}
+    constexpr SADeleter() noexcept : m_derived(), m_destroy() {}
     explicit constexpr SADeleter(std::nullptr_t) noexcept : SADeleter() {}
 
     template<typename Tp>
     explicit constexpr SADeleter(Tp *ptr) noexcept 
-    : m_derived(ptr), m_deal(SingleAllocator<Tp>::getDeallocator()) {}
+    : m_derived(const_cast<void*>(static_cast<const void*>(ptr))), 
+      m_destroy([] (void *ptr) {
+          Tp *retrieved = static_cast<Tp*>(ptr);
+          destroy(retrieved);
+          SingleAllocator<Tp>::deallocate(retrieved);
+      }) {}
 
     ACHIBULUP__constexpr_fun14 SADeleter(SADeleter &&other) noexcept
-    : m_derived(other.m_derived), m_deal(other.m_deal)
-    {
-        other.m_derived = {};
-        other.m_deal = {};
-    }
+    : m_derived(Move(other.m_derived)), m_destroy(Move(other.m_destroy)) {}
 
     ACHIBULUP__constexpr_fun14 SADeleter& 
     operator = (SADeleter &&other) noexcept
     {
         if (this != &other) {
-          this->m_derived = other.m_derived;
-          this->m_deal = other.m_deal;
-          other.m_derived = {};
-          other.m_deal = {};
+          MoveAssign(this->m_derived, other.m_derived);
+          MoveAssign(this->m_destroy, other.m_destroy);
         }
         return *this;
     }
@@ -129,17 +139,15 @@ class SADeleter
     {
         using std::swap;
         swap(this->m_derived, other.m_derived);
-        swap(this->m_deal, other.m_deal);
+        swap(this->m_destroy, other.m_destroy);
     }
 
-    template<typename Tp>
-    void operator () (Tp* ptr) noexcept
+    void operator () (const void*) noexcept
     {
-        if (ptr) destroy(ptr);
-        if (this->m_deal) {
-          this->m_deal(this->m_derived);
+        if (this->m_destroy) {
+          this->m_destroy(this->m_derived);
           this->m_derived = {};
-          this->m_deal = {};
+          this->m_destroy = {};
         }
     }
 
@@ -150,14 +158,20 @@ class SADeleter
 
   private:
     void *m_derived;
-    SingleDeallocator m_deal;
+    Destroyer m_destroy;
 };
 
 
 
-
+/// @brief a type of unique pointer that uses SingleAllocator to allocate memory
+/// this pointer supports the same interface as std::unique_ptr
+/// you can also safely upcast to a base type and destroy it without the destructor being virtual
+/// instances of this type (other than nullptr) should be made with the makeSAUnique() factory function (see below)
 template<typename Tp>
 using SAUniquePtr = std::unique_ptr<Tp, SADeleter>;
+
+
+
 
 template<typename Tp, typename ...Args>
 SAUniquePtr<Tp> makeSAUnique(Args&& ...args)

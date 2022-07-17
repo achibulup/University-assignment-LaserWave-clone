@@ -125,7 +125,7 @@ class Enemies
   private:
     void addEnemy(Unique<Enemy> enemy);
 
-    List<Unique<Enemy>> m_enemies;
+    UList<Unique<Enemy>> m_enemies;
 };
 
 }

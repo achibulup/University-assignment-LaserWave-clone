@@ -1,8 +1,9 @@
 #include "Game.hpp"
+#include "stateRequests.hpp"
 #include "EventManager.hpp"
-#include "SplashState.hpp"
 #include "assets.hpp"
 #include "debug_utils.hpp"
+#include "paths.hpp"
 #include <fstream>
 
 extern std::ofstream log_file;
@@ -14,29 +15,28 @@ Game::Game() : m_states(this->getData())
 {
     this->initWindow();
     this->load();
-    this->m_states.pushState<SplashState>();
+    this->m_states.addRequest(makePushRequest<SplashState>());
+    this->m_states.processRequests();
 }
 Game::~Game() {}
 
 void Game::run()
 {
     sf::Clock clock;
-    sf::Time lag_accumulator = sf::Time::Zero;
 
     try {
       while (!this->m_states.empty()) {
-        sf::Time elapsed_time = clock.restart();
-        lag_accumulator += elapsed_time;
+        sf::Time lag = clock.restart();
 
-        WHEN_DEBUG(if (lag_accumulator > this->TIME_PER_FRAME * 2.f)
+        WHEN_DEBUG(if (lag > this->TIME_PER_FRAME * 2.f)
             ::log_file << this->m_states.getTopState().m_id.getString() 
-                       << " " << lag_accumulator.asSeconds() << std::endl;)
+                       << " " << lag.asSeconds() << std::endl;)
 
-        if (lag_accumulator > sf::seconds(0.15f)) {
-          lag_accumulator = sf::seconds(0.15f);
+        if (lag > sf::seconds(0.15f)) {
+          lag = sf::seconds(0.15f);
         }
-        while (lag_accumulator > this->TIME_PER_FRAME) {
-          lag_accumulator -= this->TIME_PER_FRAME;
+        int frames_behind = std::round(lag / this->TIME_PER_FRAME);
+        while (frames_behind--) {
           EventManager events(this->getEvents());
           this->update(this->TIME_PER_FRAME, events);
         }
@@ -66,6 +66,7 @@ void Game::initWindow()
 void Game::load()
 {
     loadAssets(this->m_asset);
+    this->m_scoreSystem.load(std::string(SCORE_PATH));
 }
 
 EventManager Game::getEvents()
@@ -93,7 +94,7 @@ void Game::updateScreen()
         state.render();
       }
     }
-    BENCHMARK_IF_DEBUG(this->m_window.display());
+    this->m_window.display();
 }
 
 State& Game::getActiveState()

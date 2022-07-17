@@ -151,8 +151,7 @@ class PolymorphicStack
 
     void clear() noexcept
     {
-        while (!this->empty())
-          this->pop();
+        while (!this->empty()) this->pop();
     }
 
     void shrinkToFit() noexcept

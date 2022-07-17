@@ -1,14 +1,48 @@
-#include "MenuState.hpp"
+#include "State.hpp"
+#include "SimpleGUI.hpp"
+
 #include "assets.hpp"
 #include "constants.hpp"
-#include "PlayingState.hpp"
 #include "stateRequests.hpp"
-#include "WipeTransitionState.hpp"
+
 
 namespace LaserWave
 {
 
-const State::Id MenuState::ID("Menu");
+class MenuState : public State INIT_DEBUG_ID(MenuState)
+{
+  public:
+    static const State::Id ID;
+
+    explicit MenuState(GameDataRef data);
+    MenuState(const MenuState&) = delete;
+    void operator = (MenuState) = delete;
+    ~MenuState();
+
+    virtual State::Id getId() const noexcept override
+    {
+        return ID;
+    }
+
+    void update(sf::Time dt, EventManager &event) override;
+    void render() const override;
+
+    void asTopState() override;
+
+  private:
+    sf::Text m_title;
+    sf::Text m_click_to_play_message;
+    sf::Time m_message_timer = sf::Time::Zero;
+    SimpleGUI m_GUI;
+    const sf::Cursor *m_cursor;
+};
+const State::Id MenuState::ID("MenuState");
+const State::Id MENUSTATE_ID = MenuState::ID;
+
+
+template StateRequest makePushRequest<MenuState>();
+
+
 
 sf::Color calcClickMessageColor(sf::Time time);
 
@@ -53,7 +87,7 @@ void MenuState::update(sf::Time dt, EventManager &event)
     if (this->m_GUI.respondToEvent(event)) {}
     else if (event.isMouseButtonPressed(sf::Mouse::Left)) {
       auto play_request = makeRequests(makePushRequest<PlayingState>());
-      this->addStateRequest(makePushRequestV<WipeTransitionState>(
+      this->addStateRequest(makePushRequest<WipeTransitionState>(
           std::move(play_request)));
       this->pause();
     }

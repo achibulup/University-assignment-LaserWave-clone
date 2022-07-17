@@ -1,4 +1,5 @@
-#include "WipeTransitionState.hpp"
+#include "State.hpp"
+
 #include "stateRequests.hpp"
 #include "constants.hpp"
 #include <iterator>
@@ -6,7 +7,35 @@
 namespace LaserWave
 {
 
-const State::Id WipeTransitionState::ID("WipeTransition");
+class WipeTransitionState : public State INIT_DEBUG_ID(WipeTransitionState)
+{
+  public:
+    static const State::Id ID;
+
+    WipeTransitionState(GameDataRef data, std::vector<StateRequest> after);
+
+    State::Id getId() const noexcept override
+    {
+        return ID;
+    }
+
+    void update(sf::Time dt, EventManager&) override;
+    void render() const override;
+
+    void asTopState() override;
+
+  private:
+    sf::Texture m_capture;
+    std::vector<StateRequest> m_after_requests;
+    sf::Time m_timeleft;
+};
+const State::Id WipeTransitionState::ID("WipeTransitionState");
+const State::Id WIPETRANSITIONSTATE_ID = WipeTransitionState::ID;
+
+
+template StateRequest makePushRequest<WipeTransitionState, std::vector<StateRequest>>(std::vector<StateRequest>&&);
+
+
 
 WipeTransitionState::WipeTransitionState(GameDataRef data, 
     std::vector<StateRequest> after)

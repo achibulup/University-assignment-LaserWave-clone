@@ -4,10 +4,10 @@
 namespace LaserWave
 {
 
-GameDataRef::GameDataRef(sf::RenderWindow* window, 
-            const AssetManager* assets, 
-            StateMachine* states)
-: m_window(window), m_assets(assets), m_states(states) {}
+GameDataRef::GameDataRef(sf::RenderWindow* window, const AssetManager* assets, 
+            StateMachine* states, ScoreSystem *score_system)
+: m_window(window), m_assets(assets), 
+  m_states(states), m_scoreSystem(score_system) {}
 
 sf::RenderWindow& GameDataRef::getWindow() const
 {
@@ -20,6 +20,10 @@ const AssetManager& GameDataRef::getAssets() const
 void GameDataRef::addStateRequest(StateRequest request) const
 {
     this->m_states->addRequest(std::move(request));
+}
+ScoreSystem& GameDataRef::getScoreSystem() const
+{
+    return *this->m_scoreSystem;
 }
 
 } // namespace LaserWave

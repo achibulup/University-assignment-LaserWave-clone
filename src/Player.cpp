@@ -80,8 +80,8 @@ void Player::shoot(sf::Vector2f direction)
     float perp_len = old_velocity.x * perp.x + old_velocity.y * perp.y;
     float proj_velocity = std::max(proj_len - PLAYER_SHOOT_SPEED, PLAYER_SHOOT_SPEED);
     float perp_velocity = (perp_len < 0) ? 
-        std::min(0.f, perp_len + PLAYER_SHOOT_SPEED)
-      : std::max(0.f, perp_len - PLAYER_SHOOT_SPEED);
+        std::min(0.f, perp_len + PLAYER_SHOOT_SPEED * 2)
+      : std::max(0.f, perp_len - PLAYER_SHOOT_SPEED * 2);
     this->m_velocity = proj_velocity * direction + perp_velocity * perp;
 }
 

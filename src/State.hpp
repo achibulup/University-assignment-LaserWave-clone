@@ -14,12 +14,14 @@ namespace LaserWave
 
 
 
-class State
+class State : protected GameDataRef
 {
+    using Data = GameDataRef;
+
   public:
     using Id = IdTemplate<State>;
 
-    explicit State(GameDataRef data) : m_data(data) {}
+    explicit State(GameDataRef data) : Data(data) {}
     virtual ~State() = default;
 
     virtual Id getId() const noexcept = 0;
@@ -38,16 +40,6 @@ class State
     virtual void onResume() {}
 
     bool isPaused() const { return this->m_paused; }
-
-  protected:
-    sf::RenderWindow &getWindow() const { return this->m_data.getWindow(); }
-    const AssetManager &getAssets() const { return this->m_data.getAssets(); }
-    void addStateRequest(StateRequest request) const
-    {
-        this->m_data.addStateRequest(std::move(request));
-    }
-
-    GameDataRef m_data;
 
   private:
     bool m_paused = false;

@@ -5,13 +5,17 @@
 #include "constants.hpp"
 #include "StateMachine.hpp"
 #include "AssetManager.hpp"
+#include "ScoreSystem.hpp"
 #include <SFML/Graphics.hpp>
 #include <stack>
 #include <vector>
 
 namespace LaserWave
 {
+
 struct ExitGame{};
+
+
 
 class Game
 {
@@ -21,10 +25,12 @@ class Game
 
     void run();
 
+    inline static const sf::Time TIME_PER_FRAME = sf::seconds(1.f / FPS);
+
   private:
     GameDataRef getData()
     {
-        GameDataRef data{&m_window, &m_asset, &m_states};
+        GameDataRef data{&m_window, &m_asset, &m_states, &m_scoreSystem};
         return data;
     }
 
@@ -39,11 +45,10 @@ class Game
 
     State& getActiveState();
 
-    inline static const sf::Time TIME_PER_FRAME = sf::seconds(1.f / FPS);
-
     sf::RenderWindow m_window;
     AssetManager m_asset;
     StateMachine m_states;
+    ScoreSystem m_scoreSystem;
 }; 
 
 } // namespace LaserWave

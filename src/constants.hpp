@@ -81,6 +81,8 @@ extern const sf::Color LASER_BEAM_OUTLINE_COLOR;
 extern const sf::Color LASER_BEAM_CIRCLE_COLOR;
 extern const sf::Color KICK_COLOR;
 
+extern const float INDICATOR_DISPLAY_TIME;
+
 extern const float ENEMY_SPAWN_INTERVAL;
 
 extern const sf::Vector2f ENEMY_SPAWN_MARGIN;

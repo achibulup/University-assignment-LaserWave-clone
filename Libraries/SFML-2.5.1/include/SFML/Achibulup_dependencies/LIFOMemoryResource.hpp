@@ -1,8 +1,8 @@
 #ifndef LIFOMemoryResource_HPP_INCLUDED
 #define LIFOMemoryResource_HPP_INCLUDED
 
-#include "common_utils.h"
-#include "objectManagement.h"
+#include "common_utils.hpp"
+#include "objectManagement.hpp"
 #include <vector>
 #include <cstddef>
 
@@ -60,16 +60,17 @@ class GrowingBufferListStrategy
     GrowingBufferListStrategy(void* initial_buffer, std::size_t initial_size, 
                               float growth_factor) noexcept;
 
-    ByteSpan getInitialBuffer() const noexcept
-    {
-        if (this->m_initial_buffer.ptr == nullptr)
-          return ByteSpan{};
-        return this->m_initial_buffer;
-    }
+    ByteSpan getInitialBuffer() const noexcept;
 
-    const std::vector<ByteSpan>& getAllocatedBuffers() const noexcept
+    /// get the number of allocated buffers
+    size_t bufferCount() const noexcept
     {
-        return this->m_buffers;
+        return this->m_buffers.size();
+    }
+    /// get the buffer at \a index in the order of allocation
+    ByteSpan getBuffer(size_t index) const noexcept
+    {
+        return this->m_buffers[index].get();
     }
 
     void setGrowthFactor(float growth_factor)
@@ -98,12 +99,10 @@ class GrowingBufferListStrategy
     void popBuffer();
 
   private:
-    static ByteSpan newBuffer(std::size_t bytes);
-    static void deleteBuffer(ByteSpan buffer) noexcept;
     std::size_t getCurrentBufferSize() const noexcept;
 
     ByteSpan m_initial_buffer = {nullptr, sizeof(Byte*)};
-    std::vector<ByteSpan> m_buffers;
+    std::vector<Buffer> m_buffers;
     float m_growth_factor = 2;
 };
 
@@ -202,7 +201,7 @@ class LIFOMemoryResource ACHIBULUP__MEMORY_RESOURCE
 
   protected:
     /// m_current_buffer == -1 means that the current buffer is the initial (external) buffer
-    std::ptrdiff_t m_current_buffer = -1;
+    size_t m_current_buffer = -1;
     std::vector<std::size_t> m_allocation_offsets;
     GrowingBufferListStrategy m_buffer_manager;
 };

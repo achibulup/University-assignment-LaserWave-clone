@@ -1,6 +1,6 @@
 #include "GameClock.hpp"
 #include "constants.hpp"
-#include <SFML/Achibulup_dependencies/common_utils.h>
+#include <SFML/Achibulup_dependencies/common_utils.hpp>
 
 namespace LaserWave
 {
@@ -17,15 +17,14 @@ void GameClock::add1Tick()
 
 void GameClock::draw(sf::RenderTarget &target, sf::RenderStates states) const
 {
-    sf::Text display(this->toDisplayString(), *this->m_font, 
-                     GAMECLOCK_FONT_SIZE);
+    sf::Text display(this->toString(), *this->m_font, GAMECLOCK_FONT_SIZE);
     display.setPosition(this->m_position.x - display.getGlobalBounds().width / 2.f,
                         this->m_position.y);
     display.setFillColor(GAMECLOCK_COLOR);
     target.draw(display, states);
 }
 
-sf::String GameClock::toDisplayString() const
+std::string GameClock::toString() const
 {
     int tmp = this->m_milliseconds / 10;
     int centiseconds = tmp % 100;

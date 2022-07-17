@@ -3,6 +3,7 @@
 namespace Achibulup
 {
 
+
 GrowingBufferListStrategy::GrowingBufferListStrategy() noexcept {}
 GrowingBufferListStrategy::
 GrowingBufferListStrategy(GrowingBufferListStrategy &&other) noexcept
@@ -34,7 +35,7 @@ GrowingBufferListStrategy::
 GrowingBufferListStrategy(std::size_t initial_size)
 : m_initial_buffer(nullptr, initial_size)
 {
-    this->m_buffers.push_back(newBuffer(initial_size));
+    this->m_buffers.push_back(Buffer(initial_size));
 }
 
 GrowingBufferListStrategy::
@@ -65,6 +66,13 @@ GrowingBufferListStrategy(void* initial_buffer, std::size_t initial_size,
 }
 
 
+ByteSpan GrowingBufferListStrategy::getInitialBuffer() const noexcept
+{
+    if (this->m_initial_buffer.ptr == nullptr)
+      return ByteSpan{};
+    return this->m_initial_buffer;
+}
+
 void GrowingBufferListStrategy::release() noexcept
 {
     while (!this->m_buffers.empty())
@@ -76,7 +84,6 @@ void GrowingBufferListStrategy::popBuffer()
     if (this->m_buffers.empty()) 
       throw std::runtime_error("GrowingBufferListStrategy::popBuffer: "
                                "no buffer to pop");
-    deleteBuffer(this->m_buffers.back());
     this->m_buffers.pop_back();
 }
 
@@ -87,26 +94,15 @@ void GrowingBufferListStrategy::pushBuffer(std::size_t bytes)
       next_buffer_size = std::max<size_t>(this->getCurrentBufferSize(), bytes);
     else 
       next_buffer_size = std::max<size_t>(
-          this->getCurrentBufferSize() * this->m_growth_factor, bytes);
-    this->m_buffers.push_back(newBuffer(next_buffer_size));
+          this->getCurrentBufferSize() * this->getGrowthFactor(), bytes);
+    this->m_buffers.push_back(Buffer(next_buffer_size));
 }
 
 std::size_t GrowingBufferListStrategy::getCurrentBufferSize() const noexcept
 {
     return this->m_buffers.empty() ? this->m_initial_buffer.size :
-                                     this->m_buffers.back().size;
+                                     this->m_buffers.back().size();
 }
-
-ByteSpan GrowingBufferListStrategy::newBuffer(std::size_t bytes)
-{
-    return ByteSpan(bytes != 0 ? ::operator new(bytes) : nullptr, bytes);
-}
-
-void GrowingBufferListStrategy::deleteBuffer(ByteSpan buffer) noexcept
-{
-    ::operator delete(buffer.ptr);
-}
-
 
 
 LIFOMemoryResource::LIFOMemoryResource() noexcept : m_buffer_manager() {}
@@ -177,7 +173,7 @@ void LIFOMemoryResource::deallocateLast() noexcept
 
 void LIFOMemoryResource::shrinkToFit() noexcept
 {
-    std::size_t pop_count = this->m_buffer_manager.getAllocatedBuffers().size() 
+    std::size_t pop_count = this->m_buffer_manager.bufferCount() 
                             - this->m_current_buffer - 1;
     while (pop_count --> 0)
       this->m_buffer_manager.popBuffer();
@@ -194,7 +190,7 @@ ByteSpan LIFOMemoryResource::getCurrentBuffer() noexcept
 {
     if (this->m_current_buffer == -1) 
       return this->m_buffer_manager.getInitialBuffer();
-    return this->m_buffer_manager.getAllocatedBuffers()[this->m_current_buffer];
+    return this->m_buffer_manager.getBuffer(this->m_current_buffer);
 }
 
 std::size_t LIFOMemoryResource::
@@ -244,8 +240,7 @@ advanceBuffer(std::size_t bytes, std::size_t alignment)
     std::size_t alloc_log_backup = this->m_allocation_offsets.size();
 
     try {
-      std::size_t n_buffers 
-          = this->m_buffer_manager.getAllocatedBuffers().size();
+      std::size_t n_buffers = this->m_buffer_manager.bufferCount();
       do {
         ++this->m_current_buffer;
         this->m_allocation_offsets.push_back(0);

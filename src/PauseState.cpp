@@ -1,15 +1,47 @@
-#include "PauseState.hpp"
+#include "State.hpp"
+#include "SimpleGUI.hpp"
+
 #include "assets.hpp"
 #include "constants.hpp"
-#include "PlayingState.hpp"
-#include "WipeTransitionState.hpp"
 #include "stateRequests.hpp"
 #include "draw_convex.hpp"
+
 
 namespace LaserWave
 {
 
-const State::Id PauseState::ID("Pause");
+class PauseState : public State INIT_DEBUG_ID(PauseState)
+{
+  public:
+    static const State::Id ID;
+
+    explicit PauseState(GameDataRef data);
+    PauseState(const PauseState&) = delete;
+    void operator = (PauseState) = delete;
+    ~PauseState();
+
+    virtual State::Id getId() const noexcept override
+    {
+        return ID;
+    }
+
+    void update(sf::Time dt, EventManager &event) override;
+    void render() const override;
+
+    void asTopState() override;
+
+  private:
+    const sf::Cursor *m_cursor;
+    SimpleGUI m_GUI;
+    sf::Text m_pause_text;
+};
+const State::Id PauseState::ID("PauseState");
+const State::Id PAUSESTATE_ID = PauseState::ID;
+
+
+template StateRequest makePushRequest<PauseState>();
+
+
 
 PauseState::PauseState(GameDataRef data)
 : State(data), m_cursor(&this->getAssets().getCursor(DEFAULT_CURSOR)),
@@ -50,17 +82,17 @@ PauseState::PauseState(GameDataRef data)
     SimpleButton restart_button = makeButton(restart_texture, restart_pos,
         [this]() {
             auto restart_request = makeRequests(
-                makePopPastRequest(PlayingState::ID),
+                makePopPastRequest(PLAYINGSTATE_ID),
                 makePushRequest<PlayingState>()
             );
-            this->addStateRequest(makePushRequestV<WipeTransitionState>(
+            this->addStateRequest(makePushRequest<WipeTransitionState>(
                 std::move(restart_request)));
         },
         restart_hover_texture
     );
     SimpleButton menu_button = makeButton(menu_texture, menu_pos,
         [this]() {
-            this->addStateRequest(makePopPastRequest(PlayingState::ID));
+            this->addStateRequest(makePopPastRequest(PLAYINGSTATE_ID));
         },
         menu_hover_texture
     );

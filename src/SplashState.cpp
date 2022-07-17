@@ -1,16 +1,59 @@
-#include "SplashState.hpp"
+#include "State.hpp"
+#include "constants.hpp"
+
 #include "constants.hpp"
 #include "assets.hpp"
-#include "MenuState.hpp"
 #include "GameMaths.hpp"
 #include "randoms.hpp"
 #include "stateRequests.hpp"
 #include <SFML/Achibulup_extensions/Pixels.hpp>
 
+
 namespace LaserWave
 {
 
-const State::Id SplashState::ID("Splash");
+class SplashState : public State INIT_DEBUG_ID(SplashState)
+{
+  public:
+    static const State::Id ID;
+
+    explicit SplashState(GameDataRef data);
+    SplashState(const SplashState&) = delete;
+    void operator = (SplashState) = delete;
+    ~SplashState();
+
+    State::Id getId() const noexcept override
+    {
+        return ID;
+    }
+
+    // void init() override;
+    void update(sf::Time dt, EventManager&) override;
+    void render() const override;
+
+  private:
+    enum Phase {
+      START_DELAY,
+      FADE_IN,
+      HANG,
+      FADE_OUT,
+      END_DELAY,
+      QUICK_END
+    };
+
+    Phase m_phase = Phase::START_DELAY;
+    sf::Uint8 m_alpha = 0;
+    sf::Time m_phase_time = sf::Time::Zero;
+    sf::Text m_text;
+    sf::Sprite m_logo;
+};
+const State::Id SplashState::ID("SplashState");
+const State::Id SPLASHSTATE_ID = SplashState::ID;
+
+
+template StateRequest makePushRequest<SplashState>();
+
+
 
 SplashState::SplashState(GameDataRef data)
 : State(data),
