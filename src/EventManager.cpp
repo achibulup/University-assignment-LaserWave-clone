@@ -11,18 +11,30 @@ EventManager::EventManager(sf::Window *window)
 {
     if (!window->hasFocus()) {
       this->m_events.push_back({sf::Event::LostFocus});
-      this->m_cache.lostFocus = true;
+      this->m_cache.hasFocus = false;
+    }
+    else {
+      this->m_cache.mousePos = sf::Mouse::getPosition();
     }
     sf::Event tmp;
     while (this->m_window->pollEvent(tmp))
       this->m_events.push_back(tmp);
     for (auto &event : this->m_events) {
-      if (event.type == sf::Event::Closed)
-        this->m_cache.closed = true;
-      if (event.type == sf::Event::LostFocus)
-        this->m_cache.lostFocus = true;
-      if (event.type == sf::Event::GainedFocus)
-        this->m_cache.lostFocus = false;
+      switch (event.type) { 
+        case sf::Event::Closed :
+          this->m_cache.closed = true;
+        break;
+        case sf::Event::LostFocus :
+          this->m_cache.hasFocus = false;
+        break;
+        case sf::Event::GainedFocus :
+          this->m_cache.hasFocus = true;
+        break;
+        case sf::Event::MouseMoved :
+          this->m_cache.mousePos = {event.mouseMove.x, event.mouseMove.y};
+        break;
+        default : break;
+      }
     }
 }
 
@@ -62,9 +74,14 @@ bool EventManager::isCloseRequested() const
     return this->m_cache.closed;
 }
 
-bool EventManager::hasLostFocus() const
+bool EventManager::hasFocus() const
 {
-    return this->m_cache.lostFocus;
+    return this->m_cache.hasFocus;
+}
+
+sf::Vector2i EventManager::getMousePosition() const
+{
+    return this->m_cache.mousePos;
 }
 
 } // namespace LaserWave

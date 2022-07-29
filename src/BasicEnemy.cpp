@@ -2,6 +2,7 @@
 #include "GameMaths.hpp"
 #include "constants.hpp"
 #include "randoms.hpp"
+#include "draw.hpp"
 
 namespace LaserWave
 {

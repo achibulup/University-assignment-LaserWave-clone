@@ -29,7 +29,6 @@ void Enemies::update(sf::Time dt)
 {
     for (auto &enemy : *this)
       enemy.update(dt);
-    this->filterDeadEnemies();
 }
 
 void Enemies::drawTo(sf::RenderTarget &target, sf::RenderStates states) const

@@ -54,6 +54,7 @@ extern template StateRequest makePushRequest<SplashState>();
 extern template StateRequest makePushRequest<MenuState>();
 extern template StateRequest makePushRequest<PlayingState>();
 extern template StateRequest makePushRequest<PauseState>();
+extern template StateRequest makePushRequest<LeaderBoardState>();
 
 extern template StateRequest 
 makePushRequest<WipeTransitionState, std::vector<StateRequest>>(

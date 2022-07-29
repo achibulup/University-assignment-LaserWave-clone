@@ -750,11 +750,12 @@ template<typename Type, class Class,
     typename = EnableIf_t<n_utils::is_basic<Type>::value>>
 class AutoProperty
 {
-  private:
+  public:
     constexpr AutoProperty() noexcept : value() {}
-    explicit constexpr AutoProperty(Type value) noexcept : value(value) {}
+    constexpr AutoProperty(Type value) noexcept : value(value) {}
 
-    explicit constexpr AutoProperty(const AutoProperty&) noexcept = default;
+  private:
+    constexpr AutoProperty(const AutoProperty&) noexcept = default;
 
     ACHIBULUP__constexpr_fun14 
     AutoProperty& operator = (const AutoProperty&) & noexcept = default;
@@ -887,23 +888,24 @@ class AutoProperty
 template<class Class>
 class AutoProperty<std::string, Class>
 {
-  private:
+  public:
     AutoProperty() noexcept : value() {}
     AutoProperty(std::string str) noexcept : value(std::move(str)) {}
 
+  private:
     AutoProperty(const AutoProperty&) = default;
     AutoProperty(AutoProperty&&) noexcept = default;
 
     AutoProperty& operator = (const AutoProperty &) & = default;
     AutoProperty& operator = (AutoProperty &&) & noexcept = default;
 
-  public:
-
-    friend void swap(AutoProperty &a, AutoProperty &b) noexcept
+    void swap(AutoProperty &b) noexcept
     {
-        a.swap(b);
+        using std::swap;
+        swap(this->value, b.value);
     }
 
+  public:
     std::string operator () () const &
     {
         return this->value;
@@ -1000,12 +1002,6 @@ class AutoProperty<std::string, Class>
         return this->value;
     }
 
-    void swap(AutoProperty &b) noexcept
-    {
-        using std::swap;
-        swap(this->value, b.value);
-    }
-
     std::string value;
 
     friend Class;
@@ -1031,11 +1027,12 @@ class AutoProperty<std::string, Class>
 template<typename Type, class Class>
 class AutoProperty<const Type, Class>
 {
-  private:
+  public:
     constexpr AutoProperty() noexcept : value() {}
-    explicit constexpr AutoProperty(Type value) noexcept : value(value) {}
+    constexpr AutoProperty(Type value) noexcept : value(value) {}
 
-    explicit constexpr AutoProperty(const AutoProperty&) noexcept = default;
+  private:
+    constexpr AutoProperty(const AutoProperty&) noexcept = default;
 
     ACHIBULUP__constexpr_fun14 
     AutoProperty& operator = (const AutoProperty&) & noexcept = default;
@@ -1164,10 +1161,11 @@ class AutoProperty<const Type, Class>
 template<class Class>
 class AutoProperty<const std::string, Class>
 {
-  private:
+  public:
     AutoProperty() noexcept : value() {}
     AutoProperty(std::string str) noexcept : value(std::move(str)) {}
 
+  private:
     AutoProperty(const AutoProperty&) = default;
     AutoProperty(AutoProperty&&) noexcept = default;
 

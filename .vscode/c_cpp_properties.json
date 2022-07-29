@@ -10,8 +10,8 @@
                 "UNICODE",
                 "_UNICODE"
             ],
-            "compilerPath": "C:\\TDM-GCC-64\\bin\\gcc.exe",
-            "cStandard": "gnu17",
+            "compilerPath": "C:\\TDM-GCC-64\\bin\\g++.exe",
+            "cppStandard": "c++17",
             "intelliSenseMode": "windows-gcc-x64"
         }
     ],

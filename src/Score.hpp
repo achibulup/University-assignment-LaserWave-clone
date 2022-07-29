@@ -9,10 +9,18 @@ namespace LaserWave
 
 using Score = std::string;
 
-inline std::string toString(Score score)
+struct ScoreEntry
 {
-    return std::move(score);
+    sf::String playerName;
+    Score score;
+};
+
+inline bool operator < (const ScoreEntry &lhs, const ScoreEntry &rhs)
+{
+    return lhs.score < rhs.score;
 }
+
+
 
 } // namespace LaserWave
 

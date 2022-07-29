@@ -1,11 +1,10 @@
 #include "State.hpp"
 #include "constants.hpp"
-
-#include "constants.hpp"
 #include "assets.hpp"
 #include "GameMaths.hpp"
 #include "randoms.hpp"
 #include "stateRequests.hpp"
+#include "SimpleGUI.hpp"
 #include <SFML/Achibulup_extensions/Pixels.hpp>
 
 
@@ -47,7 +46,7 @@ class SplashState : public State INIT_DEBUG_ID(SplashState)
     sf::Text m_text;
     sf::Sprite m_logo;
 };
-const State::Id SplashState::ID("SplashState");
+const State::Id SplashState::ID ("SplashState");
 const State::Id SPLASHSTATE_ID = SplashState::ID;
 
 
@@ -61,17 +60,9 @@ SplashState::SplashState(GameDataRef data)
   m_logo(this->getAssets().getTexture(SFML_LOGO)) 
 {
     this->m_logo.setScale({0.5f, 0.5f});
-    sf::Vector2f logo_size = {
-        this->m_logo.getGlobalBounds().width, 
-        this->m_logo.getGlobalBounds().height
-    };
-    this->m_logo.setPosition(this->getWindow().getSize().x / 2.f - logo_size.x / 2.f, LOGO_Y);
+    this->m_logo.setPosition(getCenterX(this->getWindow(), this->m_logo), LOGO_Y);
     this->m_logo.setColor(sf::Color(255, 255, 255, 0));
 
-    sf::Vector2f text_size = {
-        m_text.getGlobalBounds().width, 
-        m_text.getLocalBounds().height
-    };
     this->m_text.setPosition(this->m_logo.getPosition().x, MADEWITH_Y);
     this->m_text.setFillColor(sf::Color(255, 255, 255, 0));
     

@@ -23,12 +23,13 @@ class ScoreSystem
 
     /// returns the rank of the added score
     /// if the score is not in the leaderboard, returns -1
-    int addScore(Score score);
+    int addScore(ScoreEntry score);
 
     /// returns the rank of the added score
     //int addScore(const char *name, int score);
 
-    const List<Score> &getLeaderBoard() const;
+    sf::String getLastPlayerName() const;
+    List<ScoreEntry> getLeaderBoard() const;
 
     void load(const std::string &file_path);
 
@@ -41,7 +42,8 @@ class ScoreSystem
     void load();
 
     std::string m_fileName;
-    List<Score> m_leaderBoard;
+    sf::String m_lastPlayerName;
+    List<ScoreEntry> m_leaderBoard;
     int m_leaderBoardMaxSize;
 };
 

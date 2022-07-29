@@ -15,15 +15,14 @@ class GameClock : public sf::Drawable
 
     void draw(sf::RenderTarget &target, sf::RenderStates) const override;
 
-    /// add the timer by 1 frame (1/60 seconds)
-    void add1Tick();
+    void update(sf::Time dt);
     
-    int asMilliseconds() const;
+    int asMicroseconds() const;
 
     std::string toString() const;
 
   private:
-    int m_milliseconds = 0;
+    sf::Time m_timer = sf::Time::Zero;
     const sf::Font *m_font;
     sf::Vector2f m_position;
 };

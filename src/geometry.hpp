@@ -15,9 +15,6 @@
 namespace LaserWave
 {
 
-using Vec2 = sf::Vector2f;
-
-using Point = Vec2;
 
 struct LineSegment
 {
@@ -33,59 +30,6 @@ struct LineSegment
 float length(const LineSegment &line);
 bool intersects(const LineSegment&, const LineSegment&);
 
-class Box
-{
-  public:
-    Box() = default;
-
-    Box(float x, float y) noexcept;
-    Box(Vec2 size) noexcept;
-    Box(float left, float top, float right, float bottom);
-    Box(float left, float top, Vec2 size);
-
-    float getWidth() const noexcept;
-    float getHeight() const noexcept;
-    Vec2 getSize() const noexcept;
-    float getLeft() const noexcept;
-    float getTop() const noexcept;
-    float getRight() const noexcept;
-    float getBottom() const noexcept;
-    Point getCenter() const noexcept;
-    Point getTopLeft() const noexcept;
-    Point getTopRight() const noexcept;
-    Point getBottomLeft() const noexcept;
-    Point getBottomRight() const noexcept;
-    /// get the topleft position
-    Point getPosition() const noexcept;
-
-    /// keep the other bounds
-    void setLeft(float pos);
-    /// keep the other bounds
-    void setTop(float pos);
-    /// keep the other bounds
-    void setRight(float pos);
-    /// keep the other bounds
-    void setBottom(float pos);
-    /// keep the size of the box
-    void setCenter(Point pos);
-    /// keep the other bounds
-    void setTopRight(Point pos);
-    /// keep the other bounds
-    void setBottomLeft(Point pos);
-    /// keep the other bounds
-    void setBottomRight(Point pos);
-    /// set the topleft postion
-    void setPosition(Point pos);
-    /// keep the position
-    void setSize(Vec2 size);
-
-    void move(Vec2 displacement);
-    void setSizeKeepCenter(Vec2 size);
-    
-  private:
-    Point m_topLeft = {};
-    Vec2 m_size = {};
-};
 std::ostream& operator<<(std::ostream&, const Box&);
 
 

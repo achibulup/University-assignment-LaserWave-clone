@@ -9,6 +9,7 @@
 #include "assets.hpp"
 #include "KickParticle.hpp"
 #include "LaserBeam.hpp"
+#include "ExplodeParticles.hpp"
 
 #include "stateRequests.hpp"
 #include "constants.hpp"
@@ -16,6 +17,8 @@
 #include "collisions.hpp"
 #include "debug_utils.hpp"
 #include "ScoreSystem.hpp"
+#include "SimpleTextBox.hpp"
+#include "SimpleGUI.hpp"
 #include <SFML/Audio.hpp>
 
 #include <fstream>
@@ -57,7 +60,7 @@ class PlayingState : public State INIT_DEBUG_ID(PlayingState)
   private:
     void processInput(sf::Time dt, EventManager &event);
     void randomlySpawnEnemy();
-    void filterOffScreenEnemies();
+    void filterDeadEnemies();
     void checkPlayerCollisions();
     void action();
     void triggerGameOver();
@@ -71,7 +74,7 @@ class PlayingState : public State INIT_DEBUG_ID(PlayingState)
     float getEnemySpawnProbability();
     Vec2 getRandomSpawnPosition() const;
     void spawnEnemy();
-    bool isFiltered(const Entity&) const;
+    bool isOffScreen(const Entity&) const;
     LaserEndPoint castLaser(Vec2 position, Vec2 direction) const;
     Vec2 checkPlayerTouchEdge();
 
@@ -96,8 +99,9 @@ class PlayingState : public State INIT_DEBUG_ID(PlayingState)
     sf::Text m_gameoverText;
     sf::Text m_gameoverSub1Text;
     sf::Text m_gameoverSub2Text;
+    SimpleTextBox m_nameTextbox;
 };
-const State::Id PlayingState::ID("PlayingState");
+const State::Id PlayingState::ID ("PlayingState");
 const State::Id PLAYINGSTATE_ID = PlayingState::ID;
 
 
@@ -105,53 +109,85 @@ template StateRequest makePushRequest<PlayingState>();
 
 
 
+
 PlayingState::PlayingState(GameDataRef data) 
-: State(data),
-  m_clock(GAMECLOCK_POS, &this->getAssets().getFont(GAMECLOCK_FONT)),
-  m_player(Vec2(this->getWindow().getSize().x / 2.f, 
-                        this->getWindow().getSize().y / 3.f)),
-  m_enemies(),
-  m_cursor(&this->getAssets().getCursor(PLAYING_CURSOR)),
-  m_shootSound(this->getAssets().getSound(SHOOT_SOUND)),
-  m_kickSound(this->getAssets().getSound(KICK_SOUND)),
-  m_hitSound(this->getAssets().getSound(HIT_SOUND)),
-  m_actionIndicator(PATTERN, sf::seconds(INDICATOR_DISPLAY_TIME),
+: State (data),
+  m_clock (GAMECLOCK_POS, &this->getAssets().getFont(GAMECLOCK_FONT)),
+  m_healthBar (PLAYER_COLOR),
+  m_player (Vec2(this->getWindow().getSize().x / 2.f, 
+                this->getWindow().getSize().y / 3.f)),
+  m_enemies (),
+  m_cursor (&this->getAssets().getCursor(PLAYING_CURSOR)),
+  m_shootSound (this->getAssets().getSound(SHOOT_SOUND)),
+  m_kickSound (this->getAssets().getSound(KICK_SOUND)),
+  m_hitSound (this->getAssets().getSound(HIT_SOUND)),
+
+  m_actionIndicator (
+      loadActionPattern(), 
+      sf::seconds(INDICATOR_DISPLAY_TIME),
       &this->getAssets().getTexture(SHOOT_ICON_IMAGE),
-      &this->getAssets().getTexture(KICK_ICON_IMAGE)),
-  m_gameoverText(GAMEOVER_TEXT, this->getAssets().getFont(GAMEOVER_FONT),
-                  GAMEOVER_FONT_SIZE),
-  m_gameoverSub1Text(GAMEOVER_SUBTITLE1, 
-      this->getAssets().getFont(GAMEOVER_FONT), GAMEOVER_SUBTITLE_FONT_SIZE),
-  m_gameoverSub2Text(GAMEOVER_SUBTITLE2, 
-      this->getAssets().getFont(GAMEOVER_FONT), GAMEOVER_SUBTITLE_FONT_SIZE)
+      &this->getAssets().getTexture(KICK_ICON_IMAGE)
+  ),
+  m_gameoverText (
+      GAMEOVER_TEXT, 
+      this->getAssets().getFont(GAMEOVER_FONT),
+      GAMEOVER_FONT_SIZE
+  ),
+  m_gameoverSub1Text (
+      GAMEOVER_SUBTITLE1, 
+      this->getAssets().getFont(GAMEOVER_FONT), 
+      GAMEOVER_SUBTITLE_FONT_SIZE
+  ),
+  m_gameoverSub2Text (
+      GAMEOVER_SUBTITLE2, 
+      this->getAssets().getFont(GAMEOVER_FONT), 
+      GAMEOVER_SUBTITLE_FONT_SIZE
+  )
 {
     this->m_healthBar.setHealth(this->m_player.health());
     this->m_shootSound.setVolume(50);
 
     this->m_gameoverText.setPosition({
-        this->getWindow().getSize().x / 2 - this->m_gameoverText.getGlobalBounds().width / 2,
+        getCenterX(this->getWindow(), this->m_gameoverText),
         GAMEOVER_Y
     });
     this->m_gameoverText.setFillColor(GAMEOVER_COLOR);
+
     this->m_gameoverSub1Text.setPosition({
-        this->getWindow().getSize().x / 2 - this->m_gameoverSub1Text.getGlobalBounds().width / 2,
+        getCenterX(this->getWindow(), this->m_gameoverSub1Text),
         GAMEOVER_SUBTITLE1_Y
     });
     this->m_gameoverSub1Text.setFillColor(GAMEOVER_COLOR);
+    
     this->m_gameoverSub2Text.setPosition({
-        this->getWindow().getSize().x / 2 - this->m_gameoverSub2Text.getGlobalBounds().width / 2,
+        getCenterX(this->getWindow(), this->m_gameoverSub2Text),
         GAMEOVER_SUBTITLE2_Y
     });
     this->m_gameoverSub2Text.setFillColor(GAMEOVER_COLOR);
+
+    this->m_nameTextbox
+        .setAlignment(SimpleTextBox::Center)
+        .setFont(&this->getAssets().getFont(NAME_FONT))
+        .setFontSize(CLICK_FONT_SIZE)
+        .setColor(sf::Color::Yellow)
+        .setText(this->getScoreSystem().getLastPlayerName())
+        .setOnEnter([this](const sf::String& name) {
+            this->m_nameTextbox.setSelected(false);
+        });
 }
-PlayingState::~PlayingState() = default;
+
+PlayingState::~PlayingState()
+{
+    this->getScoreSystem().addScore({
+        this->m_nameTextbox.text(), this->m_clock.toString()});
+}
 
 void PlayingState::update(sf::Time dt, EventManager &event)
 {//WHEN_DEBUG(Benchmarker bench("PlayingState::update");)
     if (this->m_state == GameState::PAUSED) return;
 
     if (this->m_state == GameState::PLAYING) {
-      this->m_clock.add1Tick();
+      this->m_clock.update(dt);
       this->m_enemySpawnTimer += dt;
       this->m_soundTimer += dt;
       this->m_actionIndicator.update(dt);
@@ -160,16 +196,16 @@ void PlayingState::update(sf::Time dt, EventManager &event)
       this->m_particles.update(dt);
 
       this->randomlySpawnEnemy();
-      this->filterOffScreenEnemies();
-
-      this->m_enemies.filterDeadEnemies();
-
+      this->filterDeadEnemies();
       this->checkPlayerCollisions();
 
       this->playHitSound();
 
       this->m_healthBar.setHealth(this->m_player.health());
       if (!this->m_player.isAlive()) {
+        auto explod = explode(this->m_player.getCenter(), PLAYER_COLOR);
+        for (auto &particle : explod)
+          this->m_particles.addParticle(std::move(particle));
         this->triggerGameOver();
       }
 
@@ -179,7 +215,7 @@ void PlayingState::update(sf::Time dt, EventManager &event)
       this->m_enemies.update(dt);
       this->m_particles.update(dt);
       this->m_actionIndicator.update(dt, true);
-      this->filterOffScreenEnemies();
+      this->filterDeadEnemies();
     }
     this->processInput(dt, event);
 }
@@ -205,6 +241,8 @@ void PlayingState::render() const
       target.draw(this->m_gameoverText);
       target.draw(this->m_gameoverSub1Text);
       target.draw(this->m_gameoverSub2Text);
+      if (this->m_nameTextbox.isSelected())
+        target.draw(this->m_nameTextbox);
     }
 
     if (::show_hitbox)
@@ -216,8 +254,10 @@ void PlayingState::asTopState()
 {
     if (this->m_state == GameState::PAUSED)
       this->m_state = GameState::PLAYING;
-    this->getWindow().setMouseCursorVisible(true);
-    this->getWindow().setMouseCursor(*this->m_cursor);
+    if (this->m_state == GameState::PLAYING) {
+      this->getWindow().setMouseCursorVisible(true);
+      this->getWindow().setMouseCursor(*this->m_cursor);
+    }
 }
 
 sf::String PlayingState::getPlayingTime() const
@@ -250,41 +290,64 @@ void PlayingState::action()
     }
 }
 
-void PlayingState::processInput(sf::Time dt, EventManager &event)
+void PlayingState::processInput(sf::Time dt, EventManager &em)
 {
-    auto &&events = event.getPendingEvents();
+    auto &&events = em.getPendingEvents();
     if (this->m_state == GameState::PLAYING) {
-      for (const auto &e : events) {
-        if (e.type == sf::Event::KeyPressed) {
-          if (e.key.code == sf::Keyboard::P 
-           || e.key.code == sf::Keyboard::Escape)
+      for (const auto &event : events) {
+        if (event.type == sf::Event::KeyPressed) {
+          if (event.key.code == sf::Keyboard::P 
+           || event.key.code == sf::Keyboard::Escape) {
             this->requestPause();
+            break;
+          }
         }
-        if (e.type == sf::Event::LostFocus) {
+        else if (event.type == sf::Event::LostFocus) {
           this->requestPause();
+          break;
+        }
+        else if (event.type == sf::Event::MouseButtonPressed) {
+          auto click = event.mouseButton;
+          if (click.button == sf::Mouse::Right) {
+            this->requestPause();
+            break;
+          }
         }
       }
     }
 
     else if (this->m_state == GameState::OVER) {
-      for (const auto &e : events) {
-        if (e.type == sf::Event::MouseButtonPressed) {
-          auto click = e.mouseButton;
+      for (const auto &event : events) {
+        if (event.type == sf::Event::MouseButtonPressed) {
+          auto click = event.mouseButton;
           if (click.button == sf::Mouse::Left) {
             this->requestRestart();
+            break;
           }
           if (click.button == sf::Mouse::Right) {
             this->requestMenu();
+            break;
           }
         }
+        if (event.type == sf::Event::KeyPressed) {
+          if (event.key.code == sf::Keyboard::Escape) {
+            this->requestMenu();
+            break;
+          }
+        }
+        this->m_nameTextbox.respondTo(event, false);
       }
+      this->m_nameTextbox.setPosition(
+          sf::Vector2f(sf::Mouse::getPosition()) 
+        - this->m_nameTextbox.getSize() / 2.f);
     }
 }
 
 void PlayingState::triggerGameOver()
 {
     this->m_state = GameState::OVER;
-    this->getScoreSystem().addScore(this->m_clock.toString());
+    this->m_nameTextbox.setSelected(true);
+    this->getWindow().setMouseCursorVisible(false);
 }
 
 void PlayingState::requestPause()
@@ -306,12 +369,23 @@ void PlayingState::requestMenu()
     this->addStateRequest(makePopRequest());
 }
 
-void PlayingState::filterOffScreenEnemies()
+void PlayingState::filterDeadEnemies()
 {
     for (auto &enemy : this->m_enemies) {
-      if (this->isFiltered(enemy))
+      if (!enemy.isAlive()) {
+        kill(enemy);
+        auto explod = explode(enemy.getCenter(), enemy.getColor(), 
+            AVERAGE_EXPLODE_PARTICLE_SIZE,
+            AVERAGE_EXPLODE_RADIUS,
+            AVERAGE_EXPLODE_PARTICLE_LIFETIME,
+            15);
+        for (auto &particle : explod)
+          this->m_particles.addParticle(std::move(particle));
+      }
+      else if (this->isOffScreen(enemy))
         kill(enemy);
     }
+    this->m_enemies.filterDeadEnemies();
 }
 
 void PlayingState::randomlySpawnEnemy()
@@ -323,6 +397,7 @@ void PlayingState::randomlySpawnEnemy()
 
 float PlayingState::getEnemySpawnProbability()
 {
+    using std::sin;
     float sin_time = sin(this->m_enemySpawnTimer.asSeconds() * 1.8);
     return 0.008 + 0.09 * std::pow(sqr(sin_time), 3);
 }
@@ -406,7 +481,7 @@ LaserEndPoint PlayingState::castLaser(
     return {laser_front.getCenter(), nullptr};
 }
 
-bool PlayingState::isFiltered(const Entity &entity) const
+bool PlayingState::isOffScreen(const Entity &entity) const
 {
     const float TOP_Y = -ENEMY_FILTER_MARGIN.y;
     const float BOTTOM_Y = this->getWindow().getSize().y + ENEMY_SPAWN_MARGIN.y;

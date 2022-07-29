@@ -24,6 +24,8 @@ class Entity : public sf::Drawable
     virtual Point getCenter() const = 0;
     Hitbox getHitbox() const { return this->v_getHitbox(); }
 
+    virtual sf::Color getColor() const noexcept = 0;
+
     virtual void update(sf::Time dt) {}
 
     bool isAlive() const noexcept { return this->m_isAlive; }

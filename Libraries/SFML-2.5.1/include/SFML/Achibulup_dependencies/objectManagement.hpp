@@ -26,7 +26,7 @@ struct ByteSpan
 
 
 template<typename Tp>
-inline constexpr Tp* Launder(Tp *ptr) noexcept
+inline constexpr Tp* launder(Tp *ptr) noexcept
 {
 #if ACHIBULUP__Cpp17_later
     return std::launder(ptr);

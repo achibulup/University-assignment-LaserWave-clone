@@ -11,15 +11,15 @@ namespace LaserWave
 class KickParticle : public Particle
 {
   public:
-    KickParticle(sf::Vector2f center, Angle angle, const sf::Texture *texture);
-
-    void update(sf::Time dt) override;
+    KickParticle(Point center, Angle angle, const sf::Texture *texture);
 
   private:
+    void onUpdate(sf::Time dt) override;
     void draw(sf::RenderTarget& target, sf::RenderStates) const override;
 
-    sf::Time m_timeleft = sf::seconds(KICK_PARTICLE_LIFETIME);
-    sf::Sprite m_sprite;
+    Point m_center;
+    Angle m_angle;
+    const sf::Texture *m_texture;
 };
  
 } // namespace LaserWave

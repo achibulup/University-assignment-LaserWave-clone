@@ -1,6 +1,7 @@
 #include <cmath>
 #include "Player.hpp"
 #include "GameMaths.hpp"
+#include "draw.hpp"
 
 namespace LaserWave
 {
@@ -34,7 +35,7 @@ sf::Color Player::getColor() const noexcept
 {
     float invincibility_interpolation = this->m_invincibility_timer.asSeconds()
                                       / PLAYER_INVINCIBILITY_DURATION;
-    float color_interpolation = sqr((invincibility_interpolation));
+    float color_interpolation = (invincibility_interpolation);
     sf::Color color = {
       PLAYER_COLOR.r + (PLAYER_INVINCIBLE_COLOR.r - PLAYER_COLOR.r) * color_interpolation,
       PLAYER_COLOR.g + (PLAYER_INVINCIBLE_COLOR.g - PLAYER_COLOR.g) * color_interpolation,

@@ -2,7 +2,6 @@
 #define PLAYER_HPP_INCLUDED
 
 #include "Entity.hpp"
-#include "draw_convex.hpp"
 #include "constants.hpp"
 
 namespace LaserWave
@@ -17,25 +16,25 @@ class Player : public Entity INIT_DEBUG_ID(Player)
 
     static const Id ID;
 
-    Player(sf::Vector2f center);
+    Player(Point center);
 
     Entity::Id getId() const noexcept override { return ID; }
     
-    sf::Vector2f getCenter() const override;
+    Point getCenter() const override;
 
     Hitbox getHitbox() const;
-    sf::Color getColor() const noexcept;
+    sf::Color getColor() const noexcept override;
 
     void update(sf::Time dt) override;
 
     bool isInvincible() const;
     int health() const;
 
-    void shoot(sf::Vector2f direction);
-    void kick(sf::Vector2f direction);
-    void getHit(sf::Vector2f direction);
+    void shoot(Vec2 direction);
+    void kick(Vec2 direction);
+    void getHit(Vec2 direction);
 
-    void setVelocity(sf::Vector2f velocity);
+    void setVelocity(Vec2 velocity);
 
   protected:
     Entity::Hitbox v_getHitbox() const override;
@@ -47,7 +46,7 @@ class Player : public Entity INIT_DEBUG_ID(Player)
     float calcDrag() const;
 
     BasicHitbox<HitboxShape> m_hitbox;
-    sf::Vector2f m_velocity = {};
+    Vec2 m_velocity = {};
     int m_health = PLAYER_MAX_HEALTH;
     sf::Time m_invincibility_timer = sf::Time::Zero;
 };

@@ -3,7 +3,6 @@
 
 #include "Enemy.hpp"
 #include "GameMaths.hpp"
-#include "draw_convex.hpp"
 
 namespace LaserWave
 {
@@ -17,17 +16,17 @@ class BasicEnemy : public Enemy INIT_DEBUG_ID(BasicEnemy)
 
     static const Id ID;
 
-    BasicEnemy(sf::Vector2f center, sf::Vector2f velocity = {});
+    BasicEnemy(Point center, Vec2 velocity = {});
 
     Entity::Id getId() const noexcept override { return ID; }
 
-    sf::Vector2f getCenter() const override;
+    Point getCenter() const override;
 
     Hitbox getHitbox() const;
-    sf::Color getColor() const noexcept;
+    sf::Color getColor() const noexcept override;
 
     void update(sf::Time dt) override;
-    void getHit(sf::Vector2f direction = {}) override;
+    void getHit(Vec2 direction = {}) override;
     bool gotHit() const;
 
   protected:
@@ -38,7 +37,7 @@ class BasicEnemy : public Enemy INIT_DEBUG_ID(BasicEnemy)
   private:
     BasicHitbox<HitboxShape> m_hitbox = BasicHitbox<HitboxShape>(6);
     Angle m_rotation_speed;
-    sf::Vector2f m_velocity = {};
+    Vec2 m_velocity = {};
     sf::Time m_freeze_time = sf::Time::Zero;
 };
 

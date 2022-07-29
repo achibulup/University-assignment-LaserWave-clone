@@ -14,10 +14,7 @@ class WipeTransitionState : public State INIT_DEBUG_ID(WipeTransitionState)
 
     WipeTransitionState(GameDataRef data, std::vector<StateRequest> after);
 
-    State::Id getId() const noexcept override
-    {
-        return ID;
-    }
+    State::Id getId() const noexcept override { return ID; }
 
     void update(sf::Time dt, EventManager&) override;
     void render() const override;
@@ -29,7 +26,7 @@ class WipeTransitionState : public State INIT_DEBUG_ID(WipeTransitionState)
     std::vector<StateRequest> m_after_requests;
     sf::Time m_timeleft;
 };
-const State::Id WipeTransitionState::ID("WipeTransitionState");
+const State::Id WipeTransitionState::ID ("WipeTransitionState");
 const State::Id WIPETRANSITIONSTATE_ID = WipeTransitionState::ID;
 
 
@@ -44,6 +41,7 @@ WipeTransitionState::WipeTransitionState(GameDataRef data,
 {
     this->m_capture.create(this->getWindow().getSize().x, this->getWindow().getSize().y);
     this->m_capture.update(this->getWindow());
+    
     this->m_after_requests.push_back(makePopRequest());
     this->m_after_requests.insert(this->m_after_requests.end(), 
         std::move_iterator(after.begin()), std::move_iterator(after.end()));

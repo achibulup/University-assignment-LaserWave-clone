@@ -40,3 +40,5 @@ auto benchmark(std::string_view name, Procedure &&procedure)
 #define BENCHMARK_IF_DEBUG(...) (__VA_ARGS__)
 #define LOG_IF_DEBUG(...) (__VA_ARGS__)
 #endif // DEBUG
+
+#define DEBUG_PRINT(...) WHEN_DEBUG(::log_file << #__VA_ARGS__ " : " << (__VA_ARGS__) << std::endl)

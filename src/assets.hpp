@@ -12,6 +12,7 @@ namespace LaserWave
 extern const AssetId MADEWITH_FONT;
 extern const AssetId SFML_LOGO;
 extern const AssetId TITLE_FONT;
+extern const AssetId LEADERBOARD_FONT;
 extern const AssetId BUTTON_IMAGE;
 extern const AssetId CLICK_FONT;
 extern const AssetId GAMECLOCK_FONT;
@@ -23,6 +24,10 @@ extern const AssetId KICK_PARTICLE_IMAGE;
 extern const AssetId SHOOT_SOUND;
 extern const AssetId KICK_SOUND;
 extern const AssetId HIT_SOUND;
+extern const AssetId HIGHSCORE_BUTTON;
+extern const AssetId HIGHSCORE_BUTTON_HOVER;
+extern const AssetId BACK_BUTTON;
+extern const AssetId BACK_BUTTON_HOVER;
 extern const AssetId EXIT_BUTTON;
 extern const AssetId EXIT_BUTTON_HOVER;
 extern const AssetId PAUSE_FONT;
@@ -33,18 +38,12 @@ extern const AssetId RESTART_BUTTON_HOVER;
 extern const AssetId MENU_BUTTON;
 extern const AssetId MENU_BUTTON_HOVER;
 extern const AssetId GAMEOVER_FONT;
+extern const AssetId NAME_FONT;
 
 extern const char *const ICON_PATH;
 
 void loadAssets(AssetManager &asset);
-
-SimpleButton makeButton(const sf::Texture *texture, sf::Vector2f pos = {},
-                        SimpleButton::OnClickFunctor on_click = {},
-                        const sf::Texture *hover_texture = {});
-
-
-extern const float LOOP_LENGTH;
-extern const List<DrumNote> PATTERN;
+List<DrumNote> loadActionPattern();
 
 } // namespace LaserWave
 

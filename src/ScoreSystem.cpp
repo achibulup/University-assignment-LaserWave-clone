@@ -4,32 +4,45 @@
 namespace LaserWave
 {
 
-// /// serializes the score
-// std::ostream& operator << (std::ostream &os, const Score &score)
-// {
-//     os << static_cast<std::string>(score);
-//     return os;
-// }
-/// serializes the leaderboard
-std::ostream& operator << (std::ostream &out, const List<Score> &list)
+static std::ostream& operator << (std::ostream &os, const sf::String &str)
 {
-    for (const auto &score : list)
-      out << score << '\n';
-    return out;
+    for (sf::Uint32 c : str)
+      os << c << ' ';
+    return os << sf::Uint32();
+} 
+static std::istream& operator >> (std::istream &is, sf::String &str)
+{
+    sf::Uint32 c;
+    str.clear();
+    while (is >> c && c)
+      str += c;
+    return is;
 }
 
-// /// deserializes the score
-// std::istream& operator >> (std::istream &in, Score &score)
-// {
-//     std::string tmp;
-//     in >> tmp;
-//     score = tmp;
-//     return in;
-// }
-/// deserializes the score
-std::istream& operator >> (std::istream &in, List<Score> &list)
+/// serializes the score entry
+static std::ostream& operator << (std::ostream &os, const ScoreEntry &entry)
 {
-    Score tmp;
+    os << entry.playerName << " " << entry.score;
+    return os;
+}
+/// deserializes the score entry
+static std::istream& operator >> (std::istream &in, ScoreEntry &entry)
+{
+    in >> entry.playerName >> entry.score;
+    return in;
+}
+
+/// serializes the leaderboard
+static std::ostream& operator << (std::ostream &out, const List<ScoreEntry> &list)
+{
+    for (const auto &entry : list)
+      out << entry << '\n';
+    return out;
+}
+/// deserializes the score
+static std::istream& operator >> (std::istream &in, List<ScoreEntry> &list)
+{
+    ScoreEntry tmp;
     while(in >> tmp) list.push_back(tmp);
     return in;
 }
@@ -54,8 +67,10 @@ void ScoreSystem::setLeaderboardMaxSize(int leaderboard_size)
     this->m_leaderBoardMaxSize = leaderboard_size;
 }
 
-int ScoreSystem::addScore(Score score)
+int ScoreSystem::addScore(ScoreEntry score)
 {
+    this->m_lastPlayerName = score.playerName;
+
     int rank = 1;
     auto it = this->m_leaderBoard.begin();
     auto end = this->m_leaderBoard.end();
@@ -71,7 +86,11 @@ int ScoreSystem::addScore(Score score)
     return rank;
 }
 
-auto ScoreSystem::getLeaderBoard() const -> const List<Score>&
+sf::String ScoreSystem::getLastPlayerName() const
+{
+    return this->m_lastPlayerName;
+}
+List<ScoreEntry> ScoreSystem::getLeaderBoard() const
 {
     return this->m_leaderBoard;
 }
@@ -84,7 +103,7 @@ void ScoreSystem::load(const std::string &file_path)
 
 void ScoreSystem::setSaveFile(const std::string &file_path)
 {
-    this->m_fileName = std::string(file_path);
+    this->m_fileName = file_path;
 }
 
 void ScoreSystem::save() const
@@ -99,7 +118,7 @@ void ScoreSystem::saveAs(const std::string &file_path) const
     std::ofstream save_file(file_path);
     if (!save_file)
       throw std::runtime_error("ScoreSystem::saveAs: could not open file");
-    save_file << this->m_leaderBoard;
+    save_file << this->m_lastPlayerName << "\n" << this->m_leaderBoard;
 }
 
 void ScoreSystem::load()
@@ -107,7 +126,7 @@ void ScoreSystem::load()
     std::ifstream load_file(this->m_fileName);
     if (!load_file) return;
       // throw std::runtime_error("ScoreSystem::load: could not open file");
-    load_file >> this->m_leaderBoard;
+    load_file >> this->m_lastPlayerName >> this->m_leaderBoard;
     if (this->m_leaderBoard.size() > this->m_leaderBoardMaxSize)
       this->m_leaderBoard.resize(this->m_leaderBoardMaxSize);
 }

@@ -1,6 +1,7 @@
 #ifndef CONSTANTS_HPP_INCLUDED
 #define CONSTANTS_HPP_INCLUDED
 
+#include "commons.hpp"
 #include "GameMaths.hpp"
 #include <SFML/Graphics.hpp>
 
@@ -10,8 +11,10 @@ namespace LaserWave
 inline namespace Constants
 {
 
+constexpr float UPDATES_PER_SECOND = 60;
+
 extern const sf::Vector2i WINDOW_SIZE;
-extern const int FPS;
+
 
 extern const float SPLASH_SCREEN_START_DELAY;
 extern const float SPLASH_SCREEN_FADE_IN;
@@ -26,8 +29,10 @@ extern const sf::String MADEWITH_MESSAGE;
 extern const sf::Color MADEWITH_COLOR;
 extern const float LOGO_Y;
 
+
 extern const sf::Color BACKGROUND_COLOR;
 extern const sf::Color PAUSE_FILTER;
+
 
 extern const sf::String TITLE;
 extern const int TITLE_FONT_SIZE;
@@ -39,28 +44,41 @@ extern const float CLICK_Y;
 extern const sf::Color CLICK_COLOR;
 extern const sf::Color BUTTON_COLOR;
 extern const sf::Color BUTTON_HOVER_COLOR;
-extern const sf::Vector2f EXIT_BUTTON_POS;
+extern const Vec2 HIGHSCORE_BUTTON_POS;
+extern const Vec2 EXIT_BUTTON_POS;
 extern const float RESUME_BUTTON_Y;
 extern const float RESTART_BUTTON_Y;
 extern const float MENU_BUTTON_Y;
+
+
+extern const sf::Color LEADERBOARD_COLOR;
+
 
 extern const float TRANSITION_DURATION;
 extern const float TRANSITION_END_DELAY;
 extern const Angle WIPE_ANGLE;
 
+
 extern const int GAMECLOCK_FONT_SIZE;
-extern const sf::Vector2f GAMECLOCK_POS;
+extern const Vec2 GAMECLOCK_POS;
 extern const sf::Color GAMECLOCK_COLOR;
 
-extern const sf::Vector2f HEALTH_BAR_POSITION;
-extern const sf::Vector2f HEALTH_BAR_UNIT_SIZE;
+extern const Vec2 HEALTH_BAR_POSITION;
+extern const Vec2 HEALTH_BAR_UNIT_SIZE;
 extern const float HEALTH_BAR_UNIT_SPACING;
+
+extern const float AVERAGE_EXPLODE_PARTICLE_SIZE;
+extern const float AVERAGE_EXPLODE_RADIUS;
+extern const float AVERAGE_EXPLODE_PARTICLE_LIFETIME;
+extern const float AVERAGE_EXPLODE_PARTICLE_COUNT;
+extern const Vec2 EXPLODE_VELOCITY_ADJUSTMENT;
+extern const float EXPLODE_PARTICLE_GRAVITY;
 
 extern const float GRAVITY;
 
 extern const sf::Color PLAYER_COLOR;
 extern const sf::Color PLAYER_INVINCIBLE_COLOR;
-extern const sf::Vector2f PLAYER_SIZE;
+extern const Vec2 PLAYER_SIZE;
 extern const float PLAYER_SPEED;
 extern const float PLAYER_HIT_SPEED;
 extern const float PLAYER_SHOOT_SPEED;
@@ -85,8 +103,8 @@ extern const float INDICATOR_DISPLAY_TIME;
 
 extern const float ENEMY_SPAWN_INTERVAL;
 
-extern const sf::Vector2f ENEMY_SPAWN_MARGIN;
-extern const sf::Vector2f ENEMY_FILTER_MARGIN;
+extern const Vec2 ENEMY_SPAWN_MARGIN;
+extern const Vec2 ENEMY_FILTER_MARGIN;
 extern const float ENEMY_FREEZE_TIME;
 extern const sf::Color ENEMY_HIT_COLOR;
 

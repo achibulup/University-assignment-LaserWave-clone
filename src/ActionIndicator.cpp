@@ -1,7 +1,7 @@
 #include "ActionIndicator.hpp"
 #include "gamemaths.hpp"
 #include "constants.hpp"
-#include "draw_convex.hpp"
+#include "draw.hpp"
 
 namespace LaserWave
 {

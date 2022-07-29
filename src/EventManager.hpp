@@ -23,7 +23,8 @@ class EventManager
     bool isMouseButtonPressed(sf::Mouse::Button button) const;
     bool isKeyPressed(sf::Keyboard::Key key) const;
     bool isCloseRequested() const;
-    bool hasLostFocus() const;
+    bool hasFocus() const;
+    sf::Vector2i getMousePosition() const;
   
   private:
     sf::Window *m_window;
@@ -31,7 +32,8 @@ class EventManager
     struct Cache
     {
         bool closed = false;
-        bool lostFocus = false;
+        bool hasFocus = true;
+        sf::Vector2i mousePos;
     }m_cache;
 };
 

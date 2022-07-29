@@ -1,10 +1,15 @@
 #ifndef GAME_MATH_HPP_INCLUDED
 #define GAME_MATH_HPP_INCLUDED
 
+#include "commons.hpp"
+
 #include <cstring>
 #include <cmath>
 #include <SFML/Graphics.hpp>
 
+namespace LaserWave
+{
+  
 inline float sqrt(float x)
 {
     return std::sqrt(x);
@@ -18,24 +23,24 @@ inline float sqr(float x)
     return x * x;
 }
 
-inline float abs(sf::Vector2f vec)
+inline float abs(Vec2 vec)
 {
     return sqrt(vec.x * vec.x + vec.y * vec.y);
 }
 
-inline float sqrLength(sf::Vector2f v)
+inline float sqrLength(Vec2 v)
 {
     return sqr(v.x) + sqr(v.y);
 }
 
-inline sf::Vector2f normalize(sf::Vector2f vec)
+inline Vec2 normalize(Vec2 vec)
 {
     return vec * rsqrt(vec.x * vec.x + vec.y * vec.y);
 }
 
-inline sf::Vector2f perpendicular(sf::Vector2f vec)
+inline Vec2 perpendicular(Vec2 vec)
 {
-    return sf::Vector2f(-vec.y, vec.x);
+    return Vec2(-vec.y, vec.x);
 }
 
 inline int round(float x)
@@ -180,12 +185,12 @@ inline float tan(Angle angle) noexcept
     return std::tan(angle.asRadians());
 }
 
-inline sf::Vector2f toDirection(Angle angle) noexcept
+inline Vec2 toDirection(Angle angle) noexcept
 {
-    return sf::Vector2f(cos(angle), sin(angle));
+    return Vec2(cos(angle), sin(angle));
 }
 
-inline Angle toAngle(sf::Vector2f direction) noexcept
+inline Angle toAngle(Vec2 direction) noexcept
 {
     return Angle::fromRadians(std::atan2(direction.y, direction.x));
 }
@@ -218,5 +223,7 @@ inline float lerp(float c1, float c2, float v1, float v2, float val)
     if (interpolation >= 1) return c2;
     return c1 + (c2 - c1) * interpolation;
 }
+
+} // namespace LaserWave
 
 #endif // GAME_MATH_HPP_INCLUDED

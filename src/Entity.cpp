@@ -10,10 +10,7 @@ Entity::Entity()
 {
     entity_list.insert(this);
 }
-Entity::Entity(const Entity&)
-{
-    entity_list.insert(this);
-}
+Entity::Entity(const Entity&) : Entity() {}
 Entity::~Entity()
 {
     entity_list.erase(this);

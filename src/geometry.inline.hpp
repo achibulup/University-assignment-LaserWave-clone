@@ -7,125 +7,6 @@ inline float length(const LineSegment &line)
 }
 
 
-inline Box::Box(float x, float y) noexcept : m_topLeft(x, y) {}
-
-inline Box::Box(Vec2 size) noexcept : m_size(size) {}
-
-inline Box::Box(float left, float top, float right, float bottom)
-: m_topLeft(left, top), m_size(right - left, bottom - top) {}
-
-inline Box::Box(float left, float top, Vec2 size) 
-: m_topLeft(left, top), m_size(size) {}
-
-inline float Box::getWidth() const noexcept
-{
-    return this->m_size.x;
-}
-inline float Box::getHeight() const noexcept
-{
-    return this->m_size.y;
-}
-inline Vec2 Box::getSize() const noexcept
-{
-    return this->m_size;
-}
-inline float Box::getLeft() const noexcept
-{
-    return this->m_topLeft.x;
-}
-inline float Box::getTop() const noexcept
-{
-    return this->m_topLeft.y;
-}
-inline float Box::getRight() const noexcept
-{
-    return this->m_topLeft.x + this->m_size.x;
-}
-inline float Box::getBottom() const noexcept
-{
-    return this->m_topLeft.y + this->m_size.y;
-}
-inline Point Box::getCenter() const noexcept
-{
-    return this->m_topLeft + this->m_size / 2.f;
-}
-inline Point Box::getTopLeft() const noexcept
-{
-    return this->m_topLeft;
-}
-inline Point Box::getTopRight() const noexcept
-{
-    return {this->getRight(), this->getTop()};
-}
-inline Point Box::getBottomLeft() const noexcept
-{
-    return {this->getLeft(), this->getBottom()};
-}
-inline Point Box::getBottomRight() const noexcept
-{
-    return {this->getRight(), this->getBottom()};
-}
-inline Point Box::getPosition() const noexcept
-{
-    return this->getTopLeft();
-}
-inline void Box::setLeft(float pos)
-{
-    this->m_topLeft.x = pos;
-}
-inline void Box::setTop(float pos)
-{
-    this->m_topLeft.y = pos;
-}
-inline void Box::setRight(float pos)
-{
-    this->m_size.x = pos - this->m_topLeft.x;
-}
-inline void Box::setBottom(float pos)
-{
-    this->m_size.y = pos - this->m_topLeft.y;
-}
-inline void Box::setCenter(Point pos)
-{
-    this->m_topLeft = pos - m_size / 2.f;
-}
-inline void Box::setTopRight(Point pos)
-{
-    this->m_size.x = pos.x - this->m_topLeft.x;
-    this->m_size.y += this->m_topLeft.y - pos.y;
-    this->m_topLeft.y = pos.y;
-}
-inline void Box::setBottomLeft(Point pos)
-{
-    this->m_size.y = pos.y - this->m_topLeft.y;
-    this->m_size.x += this->m_topLeft.x - pos.x;
-    this->m_topLeft.x = pos.x;
-}
-inline void Box::setBottomRight(Point pos)
-{
-    this->m_size.x = pos.x - this->m_topLeft.x;
-    this->m_size.y = pos.y - this->m_topLeft.y;
-}
-inline void Box::setPosition(Point pos)
-{
-    this->m_topLeft = pos;
-}
-inline void Box::setSize(Vec2 size)
-{
-    this->m_size = size;
-}
-inline void Box::move(Vec2 displacement)
-{
-    this->m_topLeft += displacement;
-}
-inline void Box::setSizeKeepCenter(Vec2 size)
-{
-    this->m_topLeft = this->getCenter() - size / 2.f;
-    this->m_size = size;
-}
-
-
-
 inline bool contains(const Box &box, Point point)
 {
     return ((box.getLeft() <= point.x) & (point.x <= box.getRight()))
@@ -323,7 +204,7 @@ inline Box Circle::getBoundingBox() const noexcept
 {
     auto center = this->getCenter();
     float radius = this->getRadius();
-    return {center.x - radius, center.y - radius, 
+    return {{center.x - radius, center.y - radius}, 
             {radius * 2.f, radius * 2.f}};
 }
 inline Point Circle::getCenter() const noexcept 

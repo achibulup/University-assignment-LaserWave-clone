@@ -25,7 +25,7 @@ class Game
 
     void run();
 
-    inline static const sf::Time TIME_PER_FRAME = sf::seconds(1.f / FPS);
+    inline static const sf::Time TIME_PER_UPDATE = sf::seconds(1.f / UPDATES_PER_SECOND);
 
   private:
     GameDataRef getData()
@@ -36,8 +36,18 @@ class Game
 
     void initWindow();
     void load();
+    void start();
+    
+    /// measure FPS of the system and calculate m_refreashPeriod.
+    /// if the FPS is approximately UPDATES_PER_SECOND (60), 
+    /// m_refreshPeriod is set to 0 and the game with try to sync updates with the screen.
+    void measureFPS();
+    bool isSyncedWithScreen() const;
 
-    void update(sf::Time dt, EventManager &events);
+    void runUnsynced();
+    void runSynced();
+
+    void update(sf::Time dt);
     void updateScreen();
 
     EventManager getEvents();
@@ -49,6 +59,7 @@ class Game
     AssetManager m_asset;
     StateMachine m_states;
     ScoreSystem m_scoreSystem;
+    sf::Time m_refreshPeriod;
 }; 
 
 } // namespace LaserWave

@@ -40,11 +40,6 @@ inline const int RIGHT_ANGLE = 2;
 inline const int OBTUSE_ANGLE = 3;
 inline const int STRAIGHT_ANGLE = 4;
 
-inline float sqrLength(sf::Vector2f v)
-{
-    return sqr(v.x) + sqr(v.y);
-}
-
 /// checks if a point is on a line segment, assuming the point is already on the line
 bool unsafeOnSeg(const Point &p, const LineSegment &line);
 
