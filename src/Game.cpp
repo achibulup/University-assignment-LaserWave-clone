@@ -77,8 +77,8 @@ void Game::measureFPS()
     this->m_refreshPeriod = sf::microseconds(duration.count() / 5);
     WHEN_DEBUG(::log_file << "FPS: " << 1.f / this->m_refreshPeriod.asSeconds() << std::endl;)
     float ratio = this->m_refreshPeriod / this->TIME_PER_UPDATE;
-    // if (0.95f < ratio && ratio < 1.05f)
-    //   this->m_refreshPeriod = sf::Time::Zero;
+    if (0.95f < ratio && ratio < 1.05f)
+      this->m_refreshPeriod = sf::Time::Zero;
 }
 bool Game::isSyncedWithScreen() const
 {
