@@ -37,6 +37,11 @@ inline Vec2 normalize(Vec2 vec)
 {
     return vec * rsqrt(vec.x * vec.x + vec.y * vec.y);
 }
+inline Vec2 normalize0(Vec2 vec)
+{
+    if (vec == Vec2()) return vec;
+    return vec * rsqrt(sqrLength(vec));
+}
 
 inline Vec2 perpendicular(Vec2 vec)
 {

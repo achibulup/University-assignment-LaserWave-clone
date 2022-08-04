@@ -118,6 +118,13 @@ StaticHitboxConvex(const Point *args, int n_arg, Point center)
 }
 
 template<int VERTICES>
+void StaticHitboxConvex<VERTICES>::copyVertices(Point *destination) const
+{
+    for (int i = 0; i < VERTICES; ++i)
+      destination[i] = this->getVertex(i);
+}
+
+template<int VERTICES>
 auto StaticHitboxConvex<VERTICES>::verticesBegin() const -> VertexIterator
 {
     return VertexIterator(this->m_center, this->m_local_vertices, VERTICES);

@@ -1,6 +1,7 @@
 #include "LaserBeam.hpp"
 #include "constants.hpp"
 #include "draw.hpp"
+#include "geometry.hpp"
 
 namespace LaserWave
 {

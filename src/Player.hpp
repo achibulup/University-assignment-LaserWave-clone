@@ -20,10 +20,11 @@ class Player : public Entity INIT_DEBUG_ID(Player)
 
     Entity::Id getId() const noexcept override { return ID; }
     
-    Point getCenter() const override;
+    Point getCenter() const noexcept override;
 
-    Hitbox getHitbox() const;
-    sf::Color getColor() const noexcept override;
+    Hitbox getHitbox() const noexcept;
+    sf::Color getSignatureColor() const noexcept final override;
+    sf::Color getColor() const noexcept;
 
     void update(sf::Time dt) override;
 
@@ -37,7 +38,7 @@ class Player : public Entity INIT_DEBUG_ID(Player)
     void setVelocity(Vec2 velocity);
 
   protected:
-    Entity::Hitbox v_getHitbox() const override;
+    Entity::Hitbox v_getHitbox() const noexcept override;
 
     void draw(sf::RenderTarget&, sf::RenderStates = {}) const override;
 

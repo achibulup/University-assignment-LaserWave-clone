@@ -11,15 +11,31 @@ class SingleAllocatorResource
 {
   public:
     /// for each instance of this type, @a n and @a alignment have to be the same in every call to allocate()
-    void* allocate(size_t n, size_t alignment = alignof(std::max_align_t))
+    SingleAllocatorResource(size_t size, size_t alignment = alignof(std::max_align_t))
+    : m_size(size), m_alignment(alignment) {}
+
+    void* allocate(size_t size, size_t alignment = alignof(std::max_align_t))
     {
-        if (n == 0) return {};
+        if (size != this->m_size || alignment != this->m_alignment)
+          throw std::runtime_error("SingleAllocatorResource::allocate(): size and alignment do not match");
+        return this->allocate();
+    }
+
+    void deallocate(void* ptr, size_t size, size_t alignment = alignof(std::max_align_t))
+    {
+        if (size != this->m_size || alignment != this->m_alignment)
+          throw std::runtime_error("SingleAllocatorResource::deallocate(): size and alignment do not match");
+        return this->deallocate(ptr);
+    }
+
+    void* allocate()
+    {
         if (!m_reuse.empty()) {
           void* result = this->m_reuse.back();
           this->m_reuse.pop_back();
           return result;
         }
-        return this->m_resource.allocate(n, alignment);
+        return this->m_resource.allocate(this->m_size, this->m_alignment);
     }
 
     void deallocate(void* ptr)
@@ -30,6 +46,7 @@ class SingleAllocatorResource
   private:
     LIFOMemoryResource m_resource;
     std::vector<void*> m_reuse;
+    size_t m_size, m_alignment;
 };
 
 class SingleDeallocator
@@ -60,7 +77,8 @@ struct StaticSizeAlignMemSource
     static SingleAllocatorResource resource;
 };
 template<std::size_t size, std::size_t alignment>
-SingleAllocatorResource StaticSizeAlignMemSource<size, alignment>::resource;
+SingleAllocatorResource 
+StaticSizeAlignMemSource<size, alignment>::resource(size, alignment);
 
 
 template<typename Tp>
@@ -69,6 +87,15 @@ class SingleAllocator
   public:
     using value_type = Tp;
     using is_always_equal = std::true_type;
+
+    constexpr SingleAllocator() noexcept = default;
+    template<typename U>
+    constexpr SingleAllocator(const SingleAllocator<U>&) noexcept {}
+
+    constexpr bool operator == (const SingleAllocator&) const noexcept
+    {
+        return true;
+    }
 
     static Tp* allocate(std::size_t n)
     {

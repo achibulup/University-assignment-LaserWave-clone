@@ -46,9 +46,9 @@ obj\asset.a: obj\assets.o obj\AssetManager.o
 	rm -f "obj\asset.a"
 	ar rs "obj\asset.a" "obj\assets.o" "obj\AssetManager.o"
 
-obj\entity.a: obj\Entity.o obj\Player.o obj\Enemies.o obj\BasicEnemy.o
+obj\entity.a: obj\Entity.o obj\Player.o obj\Enemies.o obj\enemy_spawn.o obj\BasicEnemy.o obj\FirstBoss.o
 	rm -f "obj\entity.a"
-	ar rs "obj\entity.a" "obj\Entity.o" "obj\Player.o" "obj\Enemies.o" "obj\BasicEnemy.o"
+	ar rs "obj\entity.a" "obj\Entity.o" "obj\Player.o" "obj\Enemies.o" "obj\enemy_spawn.o" "obj\BasicEnemy.o" "obj\FirstBoss.o"
 
 obj\particle.a: obj\Particles.o obj\KickParticle.o obj\LaserBeam.o obj\ExplodeParticles.o
 	rm -f "obj\particle.a"
@@ -99,6 +99,9 @@ obj\draw.o : src\draw.cpp
 obj\Enemies.o: src\Enemies.cpp
 	$(MAKE) compile UNIT_NAME=Enemies
 
+obj\enemy_spawn.o: src\enemy_spawn.cpp
+	$(MAKE) compile UNIT_NAME=enemy_spawn
+
 obj\Entity.o: src\Entity.cpp
 	$(MAKE) compile UNIT_NAME=Entity
 
@@ -107,6 +110,9 @@ obj\EventManager.o: src\EventManager.cpp
 
 obj\ExplodeParticles.o: src\ExplodeParticles.cpp
 	$(MAKE) compile UNIT_NAME=ExplodeParticles
+
+obj\FirstBoss.o: src\FirstBoss.cpp
+	$(MAKE) compile UNIT_NAME=FirstBoss
 
 obj\Game.o: src\Game.cpp
 	$(MAKE) compile UNIT_NAME=Game
@@ -223,20 +229,26 @@ src\constants.cpp: src\constants.hpp
 
 src\constants.hpp:
 
-src\draw.cpp: src\draw.hpp
+src\draw.cpp: src\draw.hpp src\geometry.hpp
 	touch src\draw.cpp
 
-src\draw.hpp: src\geometry.hpp
+src\draw.hpp: src\commons.hpp
 	touch src\draw.hpp
 
 src\Enemy.hpp: src\Entity.hpp
 	touch src\Enemy.hpp
 
-src\Enemies.cpp: src\Enemies.hpp src\BasicEnemy.hpp
+src\Enemies.cpp: src\Enemies.hpp
 	touch src\Enemies.cpp
 
-src\Enemies.hpp: src\Enemy.hpp
+src\Enemies.hpp: src\Enemy.hpp src\Boss.hpp
 	touch src\Enemies.hpp
+
+src\enemy_spawn.cpp: src\enemy_spawn.hpp src\randoms.hpp src\constants.hpp
+	touch src\enemy_spawn.cpp
+
+src\enemy_spawn.hpp: src\Enemies.hpp
+	touch src\enemy_spawn.hpp
 
 src\Entity.cpp: src\Entity.hpp src\collisions.hpp
 	touch src\Entity.cpp
@@ -255,6 +267,12 @@ src\ExplodeParticles.cpp: src\ExplodeParticles.hpp src\hitbox.hpp
 
 src\ExplodeParticles.hpp: src\commons.hpp src\Particles.hpp
 	touch src\ExplodeParticles.hpp
+
+src\FirstBoss.cpp: src\FirstBoss.hpp src\draw.hpp
+	touch src\FirstBoss.cpp
+
+src\FirstBoss.hpp: src\Enemy.hpp
+	touch src\FirstBoss.hpp
 
 src\Game.cpp: src\Game.hpp src\EventManager.hpp src\assets.hpp
 	touch src\Game.cpp
@@ -310,7 +328,7 @@ src\LaserBeam.hpp: src\Particle.hpp
 src\LeaderBoardState.cpp: src\state.hpp src\draw.hpp src\SimpleGUI.hpp src\ScoreSystem.hpp
 	touch src\LeaderBoardState.cpp
 
-src\MenuState.cpp: src\State.hpp src\SimpleGUI.hpp
+src\MenuState.cpp: src\State.hpp src\SimpleGUI.hpp src\Enemies.hpp src\BasicEnemy.hpp
 	touch src\MenuState.cpp
 
 src\Particles.cpp: src\Particles.hpp
@@ -336,7 +354,7 @@ src\Player.hpp: src\Entity.hpp
 src\PlayingState.cpp: src\State.hpp src\Player.hpp src\HealthBar.hpp src\Enemies.hpp\
     src\GameClock.hpp src\Particles.hpp src\ActionIndicator.hpp src\collisions.hpp\
     src\KickParticle.hpp src\Particles.hpp src\LaserBeam.hpp src\ExplodeParticles.hpp\
-    src\Enemies.hpp src\BasicEnemy.hpp src\ScoreSystem.hpp
+    src\Enemies.hpp src\BasicEnemy.hpp src\ScoreSystem.hpp src\FirstBoss.hpp
 	touch src\PlayingState.cpp
 
 src\randoms.cpp: src\randoms.hpp

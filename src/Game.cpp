@@ -133,7 +133,6 @@ void Game::runSynced()
     while (!this->m_states.empty()) {
       /// lag will be approximately an integer multiple of TIME_PER_UPDATE (ideally 1).
       sf::Time lag = clock.restart(); 
-      sf::Clock update_clock;
 
       WHEN_DEBUG(if (lag > this->TIME_PER_UPDATE * 2.f)
           ::log_file << this->m_states.getTopState().m_id.getString() 
@@ -142,22 +141,33 @@ void Game::runSynced()
       lag = std::min(lag, MAX_UPDATE_LAG);
 
       int frames_behind = std::round(lag / this->TIME_PER_UPDATE);
-      DEBUG_PRINT(frames_behind);
+      if (frames_behind > 1) ::log_file << frames_behind;;
+      WHEN_DEBUG(if (frames_behind > 1)
+          ::log_file << "Lag: " << lag.asSeconds() << " " << frames_behind << std::endl;)
       while (frames_behind --> 1) 
-        this->update(this->TIME_PER_UPDATE);
+        LOG_IF_DEBUG(this->update(this->TIME_PER_UPDATE));
 
-      sf::Time update_time = update_clock.getElapsedTime();
+
+      sf::Time update_time = clock.getElapsedTime();
       sf::Time sleep_time = this->TIME_PER_UPDATE * 0.5f - update_time;
       if (sleep_time > sf::Time::Zero)
         sleepFor(sleep_time);
+      WHEN_DEBUG(else
+        ::log_file << "!Lag: " << clock.getElapsedTime().asSeconds() << std::endl;)
       
       LOG_IF_DEBUG(this->update(this->TIME_PER_UPDATE));
 
+
       if (this->m_states.empty()) break;
-      update_time += update_clock.getElapsedTime();
+      update_time = clock.getElapsedTime();
       sleep_time = this->TIME_PER_UPDATE * 0.8f - update_time;
       if (sleep_time > sf::Time::Zero)
         sleepFor(sleep_time);
+      WHEN_DEBUG(else
+        ::log_file << "!Lag: " << clock.getElapsedTime().asSeconds() << std::endl;)
+
+      WHEN_DEBUG(if (clock.getElapsedTime() > this->TIME_PER_UPDATE * 0.9f)
+          ::log_file << "!Lag: " << clock.getElapsedTime().asSeconds() << std::endl;)
 
       LOG_IF_DEBUG(this->updateScreen());
     }

@@ -7,9 +7,6 @@
 #include "ActionIndicator.hpp"
 #include "GameMaths.hpp"
 #include "assets.hpp"
-#include "KickParticle.hpp"
-#include "LaserBeam.hpp"
-#include "ExplodeParticles.hpp"
 
 #include "stateRequests.hpp"
 #include "constants.hpp"
@@ -19,6 +16,12 @@
 #include "ScoreSystem.hpp"
 #include "SimpleTextBox.hpp"
 #include "SimpleGUI.hpp"
+#include "ExplodeParticles.hpp"
+#include "enemy_spawn.hpp"
+#include "KickParticle.hpp"
+#include "LaserBeam.hpp"
+#include "FirstBoss.hpp"
+#include "BasicEnemy.hpp"
 #include <SFML/Audio.hpp>
 
 #include <fstream>
@@ -58,6 +61,13 @@ class PlayingState : public State INIT_DEBUG_ID(PlayingState)
     sf::String getPlayingTime() const;
 
   private:
+    enum class GameState 
+    { 
+        PLAYING, 
+        PAUSED, 
+        OVER 
+    };
+
     void processInput(sf::Time dt, EventManager &event);
     void randomlySpawnEnemy();
     void filterDeadEnemies();
@@ -73,19 +83,17 @@ class PlayingState : public State INIT_DEBUG_ID(PlayingState)
     void playHitSound();
     float getEnemySpawnProbability();
     Vec2 getRandomSpawnPosition() const;
+    void addRandomEnemy(Point position, Point player_position);
     void spawnEnemy();
     bool isOffScreen(const Entity&) const;
     LaserEndPoint castLaser(Vec2 position, Vec2 direction) const;
     Vec2 checkPlayerTouchEdge();
 
-    enum class GameState {
-      PLAYING,
-      PAUSED,
-      OVER,
-    }m_state = GameState::PLAYING;
+    GameState m_state = GameState::PLAYING;
     GameClock m_clock;
     Particles m_particles;
     HealthBar m_healthBar;
+    HealthBar m_bossHealthBar;
     Player m_player;
     Enemies m_enemies;
     const sf::Cursor *m_cursor;
@@ -113,7 +121,8 @@ template StateRequest makePushRequest<PlayingState>();
 PlayingState::PlayingState(GameDataRef data) 
 : State (data),
   m_clock (GAMECLOCK_POS, &this->getAssets().getFont(GAMECLOCK_FONT)),
-  m_healthBar (PLAYER_COLOR),
+  m_healthBar (HEALTH_BAR_POSITION, HealthBar::Direction::RIGHT, PLAYER_COLOR),
+  m_bossHealthBar (BOSS_HEALTH_BAR_POSITION, HealthBar::Direction::LEFT),
   m_player (Vec2(this->getWindow().getSize().x / 2.f, 
                 this->getWindow().getSize().y / 3.f)),
   m_enemies (),
@@ -178,8 +187,9 @@ PlayingState::PlayingState(GameDataRef data)
 
 PlayingState::~PlayingState()
 {
-    this->getScoreSystem().addScore({
-        this->m_nameTextbox.text(), this->m_clock.toString()});
+    if (this->m_state == GameState::OVER)
+      this->getScoreSystem().addScore({
+          this->m_nameTextbox.text(), this->m_clock.toString()});
 }
 
 void PlayingState::update(sf::Time dt, EventManager &event)
@@ -202,8 +212,18 @@ void PlayingState::update(sf::Time dt, EventManager &event)
       this->playHitSound();
 
       this->m_healthBar.setHealth(this->m_player.health());
+
+      if (auto *boss = this->m_enemies.getBossPtr()) {
+        this->m_bossHealthBar.setHealth(boss->getHealth());
+        this->m_bossHealthBar.setColor(boss->getSignatureColor());
+      }
+
       if (!this->m_player.isAlive()) {
-        auto explod = explode(this->m_player.getCenter(), PLAYER_COLOR);
+        auto explod = explode(this->m_player.getCenter(), PLAYER_COLOR, 
+            AVERAGE_EXPLODE_PARTICLE_SIZE,
+            AVERAGE_EXPLODE_RADIUS,
+            AVERAGE_EXPLODE_PARTICLE_LIFETIME,
+            10);
         for (auto &particle : explod)
           this->m_particles.addParticle(std::move(particle));
         this->triggerGameOver();
@@ -234,6 +254,8 @@ void PlayingState::render() const
 
     target.draw(this->m_clock);
     target.draw(this->m_healthBar);
+    if (this->m_enemies.haveBoss())
+      target.draw(this->m_bossHealthBar);
 
     this->m_actionIndicator.drawTo(target);
 
@@ -279,13 +301,13 @@ void PlayingState::action()
     if (get_action == PlayerAction::SHOOT) {
       auto mouse_pos = Vec2(sf::Mouse::getPosition());
       Vec2 direction = mouse_pos - this->m_player.getCenter();
-      direction = normalize(direction);
+      direction = normalize0(direction);
       this->playerShoot(direction);
     }
     else if (get_action == PlayerAction::KICK) {
       auto mouse_pos = Vec2(sf::Mouse::getPosition());
       Vec2 direction = mouse_pos - this->m_player.getCenter();
-      direction = normalize(direction);
+      direction = normalize0(direction);
       this->playerKick(direction);
     }
 }
@@ -371,16 +393,22 @@ void PlayingState::requestMenu()
 
 void PlayingState::filterDeadEnemies()
 {
+    bool boss_dead = false;
     for (auto &enemy : this->m_enemies) {
+      if (boss_dead) kill(enemy);
       if (!enemy.isAlive()) {
-        kill(enemy);
-        auto explod = explode(enemy.getCenter(), enemy.getColor(), 
-            AVERAGE_EXPLODE_PARTICLE_SIZE,
-            AVERAGE_EXPLODE_RADIUS,
-            AVERAGE_EXPLODE_PARTICLE_LIFETIME,
-            15);
-        for (auto &particle : explod)
-          this->m_particles.addParticle(std::move(particle));
+        if (auto *boss = dynamic_cast<Boss*>(&enemy)) {
+          boss_dead = true;
+          auto explod = explode(boss->getCenter(), boss->getSignatureColor(), 
+              20.f, 300.f, AVERAGE_EXPLODE_PARTICLE_LIFETIME, 30);
+          for (auto &particle : explod)
+            this->m_particles.addParticle(std::move(particle));
+        }
+        else {
+          auto explod = explode(enemy.getCenter(), enemy.getSignatureColor());
+          for (auto &particle : explod)
+            this->m_particles.addParticle(std::move(particle));
+        }
       }
       else if (this->isOffScreen(enemy))
         kill(enemy);
@@ -399,15 +427,31 @@ float PlayingState::getEnemySpawnProbability()
 {
     using std::sin;
     float sin_time = sin(this->m_enemySpawnTimer.asSeconds() * 1.8);
-    return 0.008 + 0.09 * std::pow(sqr(sin_time), 3);
+    float prob = 0.012 + 0.08 * std::pow(std::max(sin_time, 0.f), 6);
+    if (this->m_enemies.haveBoss()) prob /= 2;
+    return prob;
 }
 
 void PlayingState::spawnEnemy()
 {
-    Vec2 spawn_pos = this->getRandomSpawnPosition();
-    Vec2 player_position = this->m_player.getCenter();
-    this->m_enemies.addRandomEnemy(spawn_pos, player_position);
+    Point spawn_pos = this->getRandomSpawnPosition();
+    if (!randInt(0, 50) && !this->m_enemies.haveBoss())
+      this->m_enemies.addBoss(
+          makeUnique<FirstBoss>(spawn_pos, &this->m_player));
+    else {
+      Point player_pos = this->m_player.getCenter();
+      Angle rand_angle;
+      if (player_pos == spawn_pos) 
+        rand_angle = Angle::fromDegrees(randFloat(0, 360)); 
+      else {
+        Vec2 direction = normalize(player_pos - spawn_pos);
+        rand_angle = toAngle(direction) + Angle::fromDegrees(randInt(-10, 10));
+      }
+      Vec2 velocity = toDirection(rand_angle) * BASIC_ENEMY_SPEED;
+      this->m_enemies.addEnemy(makeUnique<BasicEnemy>(spawn_pos, velocity));
+    }
 }
+
 
 void PlayingState::playerShoot(Vec2 direction)
 {
@@ -475,7 +519,7 @@ LaserEndPoint PlayingState::castLaser(
       auto *enemy = getHitEnemy(laser_front);
       laser_front.translate(direction * 1.f);
       if (enemy)
-        return LaserEndPoint{laser_front.getCenter() + 14.f * direction, enemy};
+        return LaserEndPoint{laser_front.getCenter() + 5.f * direction, enemy};
     }
 
     return {laser_front.getCenter(), nullptr};
@@ -483,49 +527,12 @@ LaserEndPoint PlayingState::castLaser(
 
 bool PlayingState::isOffScreen(const Entity &entity) const
 {
-    const float TOP_Y = -ENEMY_FILTER_MARGIN.y;
-    const float BOTTOM_Y = this->getWindow().getSize().y + ENEMY_SPAWN_MARGIN.y;
-    const float LEFT_X = -ENEMY_FILTER_MARGIN.x;
-    const float RIGHT_X = this->getWindow().getSize().x + ENEMY_FILTER_MARGIN.x;
-    return entity.getCenter().x < LEFT_X
-        || entity.getCenter().x > RIGHT_X
-        || entity.getCenter().y < TOP_Y
-        || entity.getCenter().y > BOTTOM_Y;
+    return LaserWave::isOffScreen(*this, entity.getCenter());
 }
 
 Vec2 PlayingState::getRandomSpawnPosition() const
 {
-    ///get a random position outside the window
-    const float TOP_Y = -ENEMY_FILTER_MARGIN.y;
-    const float BOTTOM_Y = this->getWindow().getSize().y + ENEMY_FILTER_MARGIN.y;
-    const float LEFT_X = -ENEMY_FILTER_MARGIN.x;
-    const float RIGHT_X = this->getWindow().getSize().x + ENEMY_FILTER_MARGIN.x;
-
-    ///decide wich side to spawn on
-    enum Side : int {
-        TOP_OR_LEFT,
-        BOTTOM_OR_RIGHT
-    };
-    Side side = Side(randInt(0, 1));
-    Vec2 res;
-    switch (side) {
-      case TOP_OR_LEFT:
-        res = {LEFT_X, TOP_Y};
-      break;
-      case BOTTOM_OR_RIGHT:
-        res = {RIGHT_X, BOTTOM_Y};
-      break;
-    }
-
-    ///get a random position on the side
-    float UNROLL_SIDES_LENGTH = (BOTTOM_Y - TOP_Y) + (RIGHT_X - LEFT_X);
-    float pos = randFloat(0.f, UNROLL_SIDES_LENGTH, 4096);
-    if (pos < (BOTTOM_Y - TOP_Y))
-      res.y = TOP_Y + pos;
-    else
-      res.x = LEFT_X + (pos - (BOTTOM_Y - TOP_Y));
-
-    return res;
+    return LaserWave::getRandomSpawnPosition(*this);
 }
 
 Vec2 PlayingState::checkPlayerTouchEdge() 
@@ -547,11 +554,7 @@ Vec2 PlayingState::checkPlayerTouchEdge()
     if (touch_right) direction += {-1.f, 0.f};
     if (touch_top) direction += {0.f, 1.f};
     if (touch_bottom) direction += {0.f, -1.f};
-    if (direction != Vec2{0, 0}) {
-      // ::log_file << player_box; 
-      return normalize(direction);
-    }
-    return direction;
+    return normalize0(direction);
 }
 
 void PlayingState::checkPlayerCollisions()
@@ -559,7 +562,7 @@ void PlayingState::checkPlayerCollisions()
     for (auto &enemy : this->m_enemies) {
       if (isColliding(this->m_player, enemy)) {
         // ::log_file << "Player got hit by enemy " << &enemy << std::endl;
-        this->playerGetHit(normalize(this->m_player.getCenter() - enemy.getCenter())); 
+        this->playerGetHit(normalize0(this->m_player.getCenter() - enemy.getCenter())); 
       }
     }
   

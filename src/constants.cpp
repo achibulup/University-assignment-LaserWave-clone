@@ -28,7 +28,7 @@ const sf::Color PAUSE_FILTER = sf::Color(0, 0, 0, 128);
 const sf::String TITLE = "LASERWAVE";
 const int TITLE_FONT_SIZE = 90;
 const float TITLE_Y = 45.f;
-const sf::Color TITLE_COLOR = sf::Color(77, 35, 113);
+const sf::Color TITLE_COLOR = sf::Color(110, 30, 150);
 const sf::String CLICK_MESSAGE = "CLICK TO PLAY";
 const int CLICK_FONT_SIZE = 50;
 const float CLICK_Y = 550.f;
@@ -47,6 +47,8 @@ const Angle WIPE_ANGLE = Angle::fromDegrees(30);
 
 
 extern const sf::Color LEADERBOARD_COLOR = sf::Color(155, 47, 144);
+extern const float LEADERBOARD_NAME_X = 500.f;
+extern const float LEADERBOARD_SCORE_X = 1200.f;
 
 
 const int GAMECLOCK_FONT_SIZE = 30;
@@ -56,11 +58,12 @@ const sf::Color GAMECLOCK_COLOR = sf::Color::White;
 const Vec2 HEALTH_BAR_POSITION = {60.f, 60.f};
 const Vec2 HEALTH_BAR_UNIT_SIZE = {30.f, 75.f};
 const float HEALTH_BAR_UNIT_SPACING = 16.f;
+const Vec2 BOSS_HEALTH_BAR_POSITION = {WINDOW_SIZE.x - 60.f, 60.f};
 
 const float AVERAGE_EXPLODE_PARTICLE_SIZE = 15.f;
 const float AVERAGE_EXPLODE_RADIUS = 250.f;
 const float AVERAGE_EXPLODE_PARTICLE_LIFETIME = 0.5f;
-const float AVERAGE_EXPLODE_PARTICLE_COUNT = 10;
+const float AVERAGE_EXPLODE_PARTICLE_COUNT = 15;
 const Vec2 EXPLODE_VELOCITY_ADJUSTMENT = {-10.f, 0};
 const float EXPLODE_PARTICLE_GRAVITY = 450.f;
 
@@ -99,10 +102,13 @@ const sf::Color ENEMY_HIT_COLOR = sf::Color::White;
 const float ENEMY_SPAWN_INTERVAL = 0.75f;
 
 const sf::Color BASIC_ENEMY_COLOR = sf::Color(80, 110, 150);
-const float BASIC_ENEMY_RADIUS = 50.f;
+const float BASIC_ENEMY_RADIUS = 60.f;
 const float BASIC_ENEMY_SPEED = 150.f;
 const Angle BASIC_ENEMY_MAX_ROTATION_SPEED = Angle::fromDegrees(60.f);
 const Angle BASIC_ENEMY_MIN_ROTATION_SPEED = Angle::fromDegrees(5.f);
+
+const sf::Color FIRST_BOSS_COLOR = sf::Color(30, 100, 222);
+const float FIRST_BOSS_SIZE = 150.f;
 
 const sf::String PAUSE_TITLE = "PAUSED";
 const int PAUSE_TITLE_FONT_SIZE = 90;

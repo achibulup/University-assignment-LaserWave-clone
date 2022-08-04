@@ -41,6 +41,8 @@ class State : protected GameDataRef
 
     bool isPaused() const { return this->m_paused; }
 
+    using GameDataRef::getWindow;
+
   private:
     bool m_paused = false;
 

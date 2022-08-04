@@ -1,7 +1,7 @@
 #ifndef CONVEX_ENTITY_HPP_INCLUDED
 #define CONVEX_ENTITY_HPP_INCLUDED
 
-#include "geometry.hpp"
+#include "commons.hpp"
 #include <SFML/Graphics.hpp>
 
 namespace LaserWave

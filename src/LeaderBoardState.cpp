@@ -75,7 +75,7 @@ void LeaderBoardState::update(sf::Time, EventManager &em)
 
 void LeaderBoardState::render() const
 {
-    this->getWindow().clear(sf::Color::Black);
+    this->getWindow().clear(BACKGROUND_COLOR);
 
     this->getWindow().draw(this->m_title);
     sf::Text name;
@@ -84,7 +84,7 @@ void LeaderBoardState::render() const
     name.setCharacterSize(CLICK_FONT_SIZE);
     name.setFillColor(sf::Color::Yellow);
 
-    score.setFont(this->getAssets().getFont(CLICK_FONT));
+    score.setFont(this->getAssets().getFont(SCORE_FONT));
     score.setCharacterSize(CLICK_FONT_SIZE);
     score.setFillColor(sf::Color::Yellow);
 
@@ -93,9 +93,9 @@ void LeaderBoardState::render() const
       auto &&entry = leaderboard[i];
       name.setString(entry.playerName.isEmpty() ? 
           "<Anonymous>" : entry.playerName);
-      name.setPosition(500, 300 + 70 * i);
+      name.setPosition(LEADERBOARD_NAME_X, 300 + 70 * i);
       score.setString(entry.score);
-      score.setPosition(1200, 300 + 70 * i);
+      score.setPosition(LEADERBOARD_SCORE_X, 300 + 70 * i);
       this->getWindow().draw(name);
       this->getWindow().draw(score);
     }

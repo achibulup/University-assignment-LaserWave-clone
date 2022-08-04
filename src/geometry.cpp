@@ -63,6 +63,69 @@ bool intersects(const Box &box, const LineSegment &line)
 
 
 
+VertexBuffer::VertexBuffer(int size)
+{
+    this->resize(size);
+}
+VertexBuffer::VertexBuffer(const VertexBuffer &other)
+{
+    (*this) = other;
+}
+VertexBuffer::VertexBuffer(VertexBuffer &&other) noexcept
+{
+    (*this) = std::move(other);
+}
+VertexBuffer& VertexBuffer::operator = (const VertexBuffer &other) &
+{
+    this->resize(other.size());
+    std::copy_n(other.getArray(), other.size(), this->getArray());
+    return *this;
+}
+VertexBuffer& VertexBuffer::operator = (VertexBuffer &&other) & noexcept
+{
+    if (other.useSmallOpt()) {
+      std::copy_n(other.getArray(), other.size(), this->getArray());
+      this->m_size = other.m_size;
+    }
+    else {
+      if (this == &other) return *this;
+      if (this->useSmallOpt()) {
+        Achibulup::destroy(&this->m_static);
+        Achibulup::construct(&this->m_dynamic, other.m_dynamic);
+        this->m_type = DYNAMIC;
+      }
+      else {
+        this->m_dynamic = other.m_dynamic;
+      }
+      this->m_size = other.m_size;
+
+      Achibulup::destroy(&other.m_dynamic);
+      Achibulup::construct(&other.m_static);
+      other.m_type = STATIC;
+      other.m_size = 0;
+    }
+    return *this;
+}
+VertexBuffer::~VertexBuffer()
+{
+    if (this->useSmallOpt()) Achibulup::destroy(&this->m_static);
+    else Achibulup::destroy(&this->m_dynamic);
+}
+void VertexBuffer::resize(int size)
+{
+    if (this->useSmallOpt()) {
+      if (size > SMALL_POLYGON_OPT_THRESHOLD) {
+        Achibulup::destroy(&this->m_static);
+        Achibulup::construct(&this->m_dynamic, size);
+        this->m_type = DYNAMIC;
+      }
+    }
+    else if (size > this->m_dynamic.size()) this->m_dynamic.resize(size);
+    this->m_size = size;
+}
+
+
+
 const Shape::Id IPolygon::ID("Polygon");
 
 Box IPolygon::getBoundingBox() const noexcept
@@ -92,14 +155,10 @@ LineSegment IPolygon::getEdge(int index) const
     return LineSegment(this->getVertex(index), this->getVertex(next_index));
 }
 
-List<Point> IPolygon::getVertices() const
+void IPolygon::copyVertices(Point *destination) const
 {
-    int vertices = this->vertexCount();
-    List<Point> res(vertices);
-    int index = 0;
     for (auto point : move(this->vertices()))
-      res[index++] = point;
-    return res;
+      *destination++ = point;
 }
 
 void IPolygon::throwInvalidIndex(int index) const
@@ -109,10 +168,10 @@ void IPolygon::throwInvalidIndex(int index) const
         this->vertexCount(),"and index == ",index));
 }
 
-class IPolygon::VertexIterator : public Achibulup::IInputIterator<Point>
+class IPolygonVertexIterator : public Achibulup::IInputIterator<Point>
 {
   public:
-    explicit VertexIterator(const IPolygon &polygon, int index = 0)
+    explicit IPolygonVertexIterator(const IPolygon &polygon, int index = 0)
     : m_source(&polygon), m_index(index), m_end(polygon.vertexCount()) {}
 
     Point yield() override final
@@ -129,48 +188,24 @@ class IPolygon::VertexIterator : public Achibulup::IInputIterator<Point>
 
 Achibulup::PMIIterator<Point> IPolygon::v_verticesBegin() const
 {
-    return VertexIterator(*this);
+    return IPolygonVertexIterator(*this);
 }
 
 
-// IPolygon::EdgeIterator::EdgeIterator(const IPolygon &polygon)
-// : m_vertexIter(polygon.v_verticesBegin())
-// {
-//     this->m_currentP1 = *this->m_vertexIter;
-//     ++this->m_vertexIter;
-//     this->m_currentP2 = *this->m_vertexIter;
-//     this->m_first = this->m_currentP1;
-// }
+void VertexList::create(const IPolygon &polygon)
+{
+    int vertices = polygon.vertexCount();
+    this->m_buffer.resize(vertices + 1);
+    auto arr = this->m_buffer.getArray();
+    polygon.copyVertices(arr);
+    arr[vertices] = arr[0];
+}
 
-// LineSegment IPolygon::EdgeIterator::get() const
-// {
-//     return LineSegment(this->m_currentP1, this->m_currentP2);
-// }
-
-// void IPolygon::EdgeIterator::advance()
-// {
-//     if (this->m_vertexIter.isEnd()) {
-//       this->m_vertexIter = {};
-//       return;
-//     }
-//     this->m_currentP1 = this->m_currentP2;
-//     ++this->m_vertexIter;
-//     if (this->m_vertexIter.isEnd()) 
-//       this->m_currentP2 = this->m_first;
-//     else
-//       this->m_currentP2 = *this->m_vertexIter;
-// }
-
-// bool IPolygon::EdgeIterator::isEnd() const noexcept
-// {
-//     return !this->m_vertexIter;
-// }
 
 const Shape::Id IConvexPolygon::ID("ConvexPolygon");
 
 
 const Polygon::Id Polygon::ID("Polygon");
-
 
 Polygon::Polygon(int n_vertices)
 {
@@ -179,27 +214,61 @@ Polygon::Polygon(int n_vertices)
         n_vertices));
     this->resize(n_vertices);
 }
-
 Polygon::Polygon(std::initializer_list<Point> points)
 {
-    if (points.size() < 3) throw std::invalid_argument(Achibulup::stringFormat(
+    int new_size = points.size();
+    if (new_size < 3) throw std::invalid_argument(Achibulup::stringFormat(
         "Polygon::Polygon(std::initializer_list<Point>): Polygon must have at least 3 points (n_vertices == ",
-        points.size()));
-    this->resize(points.size());
-    auto iter = this->vertices().begin();
-    for (int i = 0; i < points.size(); ++i) {
-      *iter = points.begin()[i];
-      ++iter;
-    }
+        new_size));
+    this->resize(new_size);
+    std::copy_n(points.begin(), new_size, this->getArray());
+}
+Polygon::~Polygon() = default;
+
+void Polygon::copyVertices(Point *destination) const
+{
+    std::copy_n(this->getArray(), this->vertexCount(), destination);
 }
 
-void Polygon::resize(int n_vertices)
+namespace {
+class PolygonVertexIterator : public Achibulup::IInputIterator<Point>
 {
-    this->m_nVertices = n_vertices;
-    if (n_vertices > SMALL_POLYGON_OPT_THRESHOLD 
-     && n_vertices > this->m_list.size())
-      this->m_list.resize(n_vertices);
+  public:
+    using iterator_category = std::forward_iterator_tag;
+
+    explicit PolygonVertexIterator(const Polygon &poly, int index = 0)
+    : m_iter(poly.getArray()), m_verticesLeft(poly.vertexCount() - index) {}
+
+    Point operator * () const
+    {
+        return *this->m_iter;
+    }
+    PolygonVertexIterator& operator ++ () &
+    {
+        ++this->m_iter;
+        --this->m_verticesLeft;
+        this->setIsEnd(this->m_verticesLeft == 0);
+        return *this;
+    }
+
+    Point yield() override final
+    {
+        auto res = **this;
+        ++*this;
+        return res;
+    }
+
+  private:
+    const Point *m_iter;
+    int m_verticesLeft;
+};
 }
+
+Achibulup::PMIIterator<Point> Polygon::v_verticesBegin() const
+{
+    return PolygonVertexIterator(*this);
+}
+
 
 
 const Shape::Id Circle::ID("Circle");

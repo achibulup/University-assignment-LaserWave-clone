@@ -39,6 +39,7 @@ extern const AssetId MENU_BUTTON;
 extern const AssetId MENU_BUTTON_HOVER;
 extern const AssetId GAMEOVER_FONT;
 extern const AssetId NAME_FONT;
+extern const AssetId SCORE_FONT;
 
 extern const char *const ICON_PATH;
 

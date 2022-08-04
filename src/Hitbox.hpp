@@ -75,6 +75,8 @@ class StaticHitboxConvex : public StaticHitboxConvexBase INIT_DEBUG_ID(StaticHit
     Point getLocalVertex(int index) const override final;
     void setLocalVertex(int index, Point pos);
 
+    void copyVertices(Point *destination) const override final;
+
     Achibulup::IterRange<VertexIterator> vertices() const;
 
   protected:
@@ -109,6 +111,8 @@ class RegularHitboxConvex : public HitboxConvex INIT_DEBUG_ID(RegularHitboxConve
     void rotate(Angle angle);
     Angle getLocalAngle(int index) const;
     Point getLocalVertex(int index) const override final;
+
+    void copyVertices(Point *destination) const override final;
 
     class VertexIterator : public Achibulup::IInputIterator<Point>
     {

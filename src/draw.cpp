@@ -1,4 +1,5 @@
 #include "draw.hpp"
+#include "geometry.hpp"
 
 namespace LaserWave
 {
@@ -54,7 +55,7 @@ void draw(sf::RenderTarget &target, const IConvexPolygon &poly,
     auto vertices = poly.vertexCount();
     draw_shape.setPointCount(vertices);
     int i = 0;
-    for (Point point : move(poly.vertices()))
+    for (Point point : getVertices(poly))
       draw_shape.setPoint(i++, point);
     apply(draw_shape, app);
     target.draw(draw_shape, states);

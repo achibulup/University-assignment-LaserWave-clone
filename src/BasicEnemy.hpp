@@ -20,17 +20,19 @@ class BasicEnemy : public Enemy INIT_DEBUG_ID(BasicEnemy)
 
     Entity::Id getId() const noexcept override { return ID; }
 
-    Point getCenter() const override;
+    Point getCenter() const noexcept override;
 
     Hitbox getHitbox() const;
-    sf::Color getColor() const noexcept override;
+    sf::Color getSignatureColor() const noexcept final override;
+    sf::Color getColor() const noexcept;
 
     void update(sf::Time dt) override;
+    
     void getHit(Vec2 direction = {}) override;
     bool gotHit() const;
 
   protected:
-    Entity::Hitbox v_getHitbox() const override;
+    Entity::Hitbox v_getHitbox() const noexcept override;
 
     void draw(sf::RenderTarget&, sf::RenderStates = {}) const override;
 

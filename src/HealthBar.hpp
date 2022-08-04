@@ -6,18 +6,39 @@
 namespace LaserWave
 {
 
+
 class HealthBar : public sf::Drawable
 {
   public:
-    HealthBar(sf::Color color = sf::Color::Red, int health = 0);
+    using Point = sf::Vector2f;
+    enum class Direction
+    {
+        LEFT,
+        RIGHT
+    };
 
-    int health() const
+    HealthBar(Point pos, Direction = Direction::RIGHT, 
+              sf::Color color = sf::Color::Red, int health = 0);
+
+    Point getPosition() const
+    {
+        return this->m_pos;
+    }
+    int getHealth() const
     {
         return this->m_health;
+    }
+    void setPosition(Point pos)
+    {
+        this->m_pos = pos;
     }
     void setColor(sf::Color color)
     {
         this->m_color = color;
+    }
+    void setDirection(Direction direction)
+    {
+        this->m_direction = direction;
     }
     void setHealth(int health)
     {
@@ -27,7 +48,9 @@ class HealthBar : public sf::Drawable
   private:
     void draw(sf::RenderTarget &target, sf::RenderStates) const override;
 
+    Point m_pos;
     sf::Color m_color;
+    Direction m_direction;
     int m_health;
 };
 

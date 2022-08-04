@@ -21,10 +21,10 @@ class Entity : public sf::Drawable
 
     virtual Id getId() const noexcept = 0;
 
-    virtual Point getCenter() const = 0;
-    Hitbox getHitbox() const { return this->v_getHitbox(); }
+    virtual Point getCenter() const noexcept = 0;
+    Hitbox getHitbox() const noexcept { return this->v_getHitbox(); }
 
-    virtual sf::Color getColor() const noexcept = 0;
+    virtual sf::Color getSignatureColor() const noexcept = 0;
 
     virtual void update(sf::Time dt) {}
 
@@ -36,7 +36,7 @@ class Entity : public sf::Drawable
     void showHitBoxTo(sf::RenderWindow &target) const;
 
   protected:
-    virtual Hitbox v_getHitbox() const = 0;
+    virtual Hitbox v_getHitbox() const noexcept = 0;
 
     virtual void draw(sf::RenderTarget&, sf::RenderStates) const override = 0;
 

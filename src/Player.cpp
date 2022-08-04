@@ -1,6 +1,7 @@
 #include <cmath>
 #include "Player.hpp"
 #include "GameMaths.hpp"
+#include "randoms.hpp"
 #include "draw.hpp"
 
 namespace LaserWave
@@ -8,7 +9,7 @@ namespace LaserWave
 
 const Entity::Id Player::ID("Player");
 
-Player::Player(sf::Vector2f center)
+Player::Player(Vec2 center)
 : m_hitbox(center)
 {
     m_hitbox.setLocalVertex(0, {0.f, -PLAYER_SIZE.y / 2});
@@ -17,31 +18,30 @@ Player::Player(sf::Vector2f center)
     m_hitbox.setLocalVertex(3, {-PLAYER_SIZE.x / 2, 0.f});
 }
 
-Point Player::getCenter() const
+Point Player::getCenter() const noexcept
 {
     return this->m_hitbox.getCenter();
 }
 
-auto Player::getHitbox() const -> Hitbox
+auto Player::getHitbox() const noexcept -> Hitbox
 {
     return this->m_hitbox;
 }
-auto Player::v_getHitbox() const -> Entity::Hitbox
+auto Player::v_getHitbox() const noexcept -> Entity::Hitbox
 {
     return this->getHitbox();
 }
 
-sf::Color Player::getColor() const noexcept
+auto Player::getSignatureColor() const noexcept -> sf::Color 
+{
+    return PLAYER_COLOR;
+}
+auto Player::getColor() const noexcept -> sf::Color 
 {
     float invincibility_interpolation = this->m_invincibility_timer.asSeconds()
                                       / PLAYER_INVINCIBILITY_DURATION;
-    float color_interpolation = (invincibility_interpolation);
-    sf::Color color = {
-      PLAYER_COLOR.r + (PLAYER_INVINCIBLE_COLOR.r - PLAYER_COLOR.r) * color_interpolation,
-      PLAYER_COLOR.g + (PLAYER_INVINCIBLE_COLOR.g - PLAYER_COLOR.g) * color_interpolation,
-      PLAYER_COLOR.b + (PLAYER_INVINCIBLE_COLOR.b - PLAYER_COLOR.b) * color_interpolation
-    };
-    return color;
+    float color_interpolation = sqrt(std::max(invincibility_interpolation, 0.f));
+    return lerp(PLAYER_COLOR, PLAYER_INVINCIBLE_COLOR, 0, 1, color_interpolation);
 }
 
 void Player::update(sf::Time dt)
@@ -70,7 +70,7 @@ int Player::health() const
     return this->m_health;
 }
 
-void Player::shoot(sf::Vector2f direction)
+void Player::shoot(Vec2 direction)
 {
     direction = -direction;
     // this->m_velocity = direction * PLAYER_SHOOT_SPEED;
@@ -86,13 +86,15 @@ void Player::shoot(sf::Vector2f direction)
     this->m_velocity = proj_velocity * direction + perp_velocity * perp;
 }
 
-void Player::kick(sf::Vector2f direction)
+void Player::kick(Vec2 direction)
 {
     this->setVelocity(-direction * PLAYER_SPEED);
 }
 
-void Player::getHit(sf::Vector2f direction)
+void Player::getHit(Vec2 direction)
 {
+    if (direction == Vec2()) direction = toDirection(
+      Angle::fromDegrees(randFloat(0, 360)));
     if (this->isAlive() && !this->isInvincible()) {
       --this->m_health;
       if (this->m_health == 0)
@@ -104,7 +106,7 @@ void Player::getHit(sf::Vector2f direction)
       this->setVelocity(direction * PLAYER_HIT_SPEED);
 }
 
-void Player::setVelocity(sf::Vector2f velocity)
+void Player::setVelocity(Vec2 velocity)
 {
     this->m_velocity = velocity;
 }

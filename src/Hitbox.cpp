@@ -46,6 +46,16 @@ Vec2 RegularHitboxConvex::getDirection(int index) const
     return rotateTransform(this->m_firstDirCache, transform);
 }
 
+void RegularHitboxConvex::copyVertices(Point *destination) const
+{
+    Point local = this->m_firstDirCache * this->m_radius;
+    destination[0] = local + this->m_center;
+    for (int i = 1, n = this->vertexCount(); i < n; ++i) {
+      local = rotateTransform(local, this->m_transformCache);
+      destination[i] = local + this->m_center;
+    }
+}
+
 void RegularHitboxConvex::throwInvalidVertexCount(int n_vertices) const
 {
     throw std::invalid_argument(Achibulup::stringFormat(

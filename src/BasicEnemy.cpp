@@ -10,13 +10,13 @@ namespace LaserWave
 const Entity::Id BasicEnemy::ID("BasicEnemy");
 
 BasicEnemy::BasicEnemy(sf::Vector2f center, sf::Vector2f velocity)
-: m_hitbox(6, center, BASIC_ENEMY_RADIUS, Angle::fromDegrees(randInt(0, 359))),
+: m_hitbox(3, center, BASIC_ENEMY_RADIUS, Angle::fromDegrees(randInt(0, 359))),
   m_rotation_speed(Angle::fromDegrees(randSign()
       * randFloat(BASIC_ENEMY_MIN_ROTATION_SPEED.asDegrees(),
                   BASIC_ENEMY_MAX_ROTATION_SPEED.asDegrees()))),
   m_velocity(velocity) {}
 
-sf::Vector2f BasicEnemy::getCenter() const
+sf::Vector2f BasicEnemy::getCenter() const noexcept
 {
     return this->m_hitbox.getCenter();
 }
@@ -24,11 +24,15 @@ auto BasicEnemy::getHitbox() const -> Hitbox
 {
     return this->m_hitbox;
 }
-auto BasicEnemy::v_getHitbox() const -> Entity::Hitbox
+auto BasicEnemy::v_getHitbox() const noexcept -> Entity::Hitbox
 {
     return this->getHitbox();
 }
 
+sf::Color BasicEnemy::getSignatureColor() const noexcept
+{
+    return BASIC_ENEMY_COLOR;
+} 
 sf::Color BasicEnemy::getColor() const noexcept
 {
     if (this->gotHit())

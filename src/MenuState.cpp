@@ -1,11 +1,13 @@
 #include "State.hpp"
 #include "SimpleGUI.hpp"
 #include "Enemies.hpp"
+#include "BasicEnemy.hpp"
 
 #include "assets.hpp"
 #include "constants.hpp"
 #include "stateRequests.hpp"
 #include "randoms.hpp"
+#include "enemy_spawn.hpp"
 
 namespace LaserWave
 {
@@ -32,7 +34,7 @@ class MenuState : public State INIT_DEBUG_ID(MenuState)
 
   private:
     void randomlySpawnEnemies();
-    Point getRandomSpawnPosition() const;
+    void filterDeadEnemies();
 
     sf::Text m_title;
     sf::Text m_click_to_play_message;
@@ -111,6 +113,7 @@ void MenuState::update(sf::Time dt, EventManager &event)
     this->m_enemies.update(dt);
 
     this->randomlySpawnEnemies();
+    this->filterDeadEnemies();
 
     if (this->m_GUI.respondToEvent(event)) {}
     else if (event.isMouseButtonPressed(sf::Mouse::Left)) {
@@ -142,47 +145,27 @@ void MenuState::asTopState()
 
 void MenuState::randomlySpawnEnemies()
 {
-    if (decide(0.005f))
-      this->m_enemies.addRandomEnemy(
-          this->getRandomSpawnPosition(), {
-          randFloat(0, this->getWindow().getSize().x),
-          randFloat(0, this->getWindow().getSize().y)
-        });
-}
-
-Point MenuState::getRandomSpawnPosition() const
-{
-    ///get a random position outside the window
-    const float TOP_Y = -ENEMY_FILTER_MARGIN.y;
-    const float BOTTOM_Y = this->getWindow().getSize().y + ENEMY_FILTER_MARGIN.y;
-    const float LEFT_X = -ENEMY_FILTER_MARGIN.x;
-    const float RIGHT_X = this->getWindow().getSize().x + ENEMY_FILTER_MARGIN.x;
-
-    ///decide wich side to spawn on
-    enum Side : int {
-        TOP_OR_LEFT,
-        BOTTOM_OR_RIGHT
-    };
-    Side side = Side(randInt(0, 1));
-    Vec2 res;
-    switch (side) {
-      case TOP_OR_LEFT:
-        res = {LEFT_X, TOP_Y};
-      break;
-      case BOTTOM_OR_RIGHT:
-        res = {RIGHT_X, BOTTOM_Y};
-      break;
+    if (decide(0.005f)) {
+      Point spawn_pos = LaserWave::getRandomSpawnPosition(*this);
+      Point target_pos = {randFloat(0.f, this->getWindow().getSize().x),
+                          randFloat(0.f, this->getWindow().getSize().y)};
+      Angle rand_angle;
+      if (target_pos == spawn_pos) 
+        rand_angle = Angle::fromDegrees(randFloat(0, 360)); 
+      else {
+        Vec2 direction = normalize(target_pos - spawn_pos);
+        rand_angle = toAngle(direction) + Angle::fromDegrees(randInt(-10, 10));
+      }
+      Vec2 velocity = toDirection(rand_angle) * BASIC_ENEMY_SPEED;
+      this->m_enemies.addEnemy(makeUnique<BasicEnemy>(spawn_pos, velocity));
     }
-
-    ///get a random position on the side
-    float UNROLL_SIDES_LENGTH = (BOTTOM_Y - TOP_Y) + (RIGHT_X - LEFT_X);
-    float pos = randFloat(0.f, UNROLL_SIDES_LENGTH, 4096);
-    if (pos < (BOTTOM_Y - TOP_Y))
-      res.y = TOP_Y + pos;
-    else
-      res.x = LEFT_X + (pos - (BOTTOM_Y - TOP_Y));
-
-    return res;
+}
+void MenuState::filterDeadEnemies()
+{
+    for (auto &enemy : this->m_enemies)
+      if (isOffScreen(*this, enemy.getCenter()))
+        kill(enemy);
+    this->m_enemies.filterDeadEnemies();
 }
 
 sf::Color calcClickMessageColor(sf::Time time)

@@ -69,13 +69,15 @@ bool contains(const BasicHitboxRef<IPolygon> &hitbox, Point point)
 {
     Box bound = hitbox.getBoundingBox();
     if (!contains(bound, point)) return false;
+
     LineSegment ray;
     ray.p1 = point;
     if (bound.getRight() - point.x > point.x - bound.getLeft())
       ray.p2 = {bound.getLeft(), point.y};
     else ray.p2 = {bound.getRight(), point.y};
+
     int intersect_up = 0;
-    for (auto edge : hitbox.getShape().edges()){     
+    for (auto edge : getEdges(hitbox.getShape())) {     
       if (std::max(edge.p1.y, edge.p2.y) <= point.y
        || !intersects(boundingBox(edge), boundingBox(ray))
        || edge.p1.y == edge.p2.y) 
@@ -92,7 +94,7 @@ bool contains(const BasicHitboxRef<IConvexPolygon> &hitbox, Point point)
 {
     if (!contains(hitbox.getBoundingBox(), point)) return false;
     enum State {NONE, CW, CCW} state = NONE;
-    for (auto edge : hitbox.getShape().edges()) {
+    for (auto edge : getEdges(hitbox.getShape())) {
       auto aa = algebraicArea(point, edge.p1, edge.p2);
       if (aa > 0) {
         if (state == CW) return false;
@@ -131,7 +133,7 @@ bool intersects(const LineSegment &line,
 {
     if (!intersects(hitbox.getBoundingBox(), boundingBox(line))) return false;
     if (contains(hitbox, line.p1)) return true;
-    for (auto edge : hitbox.getShape().edges())
+    for (auto edge : getEdges(hitbox.getShape()))
       if (intersects(line, edge)) return true;
     return false;
 }
@@ -139,91 +141,91 @@ bool intersects(const LineSegment &line, const BasicHitboxRef<IPolygon> &hitbox)
 {
     if (!intersects(hitbox.getBoundingBox(), boundingBox(line))) return false;
     if (contains(hitbox, line.p1)) return true;
-    for (auto edge : hitbox.getShape().edges())
+    for (auto edge : getEdges(hitbox.getShape()))
       if (intersects(line, edge)) return true;
     return false;
 }
 
 
 
-bool collides(const BasicHitboxRef<IPolygon> &lhs, 
-              const BasicHitboxRef<IPolygon> &rhs)
+bool collides(const BasicHitboxRef<IPolygon> &poly1, 
+              const BasicHitboxRef<IPolygon> &poly2)
 {
-    if (!intersects(lhs.getBoundingBox(), rhs.getBoundingBox())) 
+    if (!intersects(poly1.getBoundingBox(), poly2.getBoundingBox())) 
       return false;
-    auto &&l_shape = lhs.getShape();
-    auto &&r_shape = rhs.getShape();
-    for (auto edge : l_shape.edges())
-      if (intersects(edge, rhs)) return true;
-    if (contains(lhs, r_shape.getVertex(0))
-     || contains(rhs, l_shape.getVertex(0)))
+    auto &&shape1 = poly1.getShape();
+    auto &&shape2 = poly2.getShape();
+    for (auto edge : getEdges(shape1))
+      if (intersects(edge, poly2)) return true;
+    if (contains(poly1, shape2.getVertex(0))
+     || contains(poly2, shape1.getVertex(0)))
       return true;
     return false;
 }
 
-bool collides(const BasicHitboxRef<IConvexPolygon> &lhs, 
-              const BasicHitboxRef<IConvexPolygon> &rhs)
+bool collides(const BasicHitboxRef<IConvexPolygon> &poly1, 
+              const BasicHitboxRef<IConvexPolygon> &poly2)
 {
-    if (!intersects(lhs.getBoundingBox(), rhs.getBoundingBox())) 
+    if (!intersects(poly1.getBoundingBox(), poly2.getBoundingBox())) 
       return false;
-    auto &&l_shape = lhs.getShape();
-    auto &&r_shape = rhs.getShape();
-    for (auto edge : l_shape.edges())
-      if (intersects(edge, rhs)) return true;
-    if ((contains(lhs, r_shape.getVertex(0)))
-     || (contains(rhs, l_shape.getVertex(0))))
+    auto &&shape1 = poly1.getShape();
+    auto &&shape2 = poly2.getShape();
+    for (auto edge : getEdges(shape1))
+      if (intersects(edge, poly2)) return true;
+    if ((contains(poly1, shape2.getVertex(0)))
+     || (contains(poly2, shape1.getVertex(0))))
        return true;
     return false;
 }
 
-bool collides(const BasicHitboxRef<IPolygon> &lhs, 
-                const BasicHitboxRef<IConvexPolygon> &rhs)
+bool collides(const BasicHitboxRef<IPolygon> &poly1, 
+                const BasicHitboxRef<IConvexPolygon> &poly2)
 {
-    if (!intersects(lhs.getBoundingBox(), rhs.getBoundingBox())) 
+    if (!intersects(poly1.getBoundingBox(), poly2.getBoundingBox())) 
       return false;
-    auto &&l_shape = lhs.getShape();
-    auto &&r_shape = rhs.getShape();
-    for (auto edge : l_shape.edges())
-      if (intersects(edge, rhs)) return true;
-    if (contains(lhs, r_shape.getVertex(0))
-     || contains(rhs, l_shape.getVertex(0)))
+    auto &&shape1 = poly1.getShape();
+    auto &&shape2 = poly2.getShape();
+    for (auto edge : getEdges(shape1))
+      if (intersects(edge, poly2)) return true;
+    if (contains(poly1, shape2.getVertex(0))
+     || contains(poly2, shape1.getVertex(0)))
       return true;
     return false;
 }
 
-bool collides(const BasicHitboxRef<Circle> &lhs, 
-                const BasicHitboxRef<Circle> &rhs)
+bool collides(const BasicHitboxRef<Circle> &cir1, 
+                const BasicHitboxRef<Circle> &cir2)
 {
-    auto &&l_shape = lhs.getShape();
-    auto &&r_shape = rhs.getShape();
-    return sqrLength(l_shape.getCenter() - r_shape.getCenter()) 
-        <= sqr(l_shape.getRadius() + r_shape.getRadius());
+    auto &&shape1 = cir1.getShape();
+    auto &&shape2 = cir2.getShape();
+    return sqrLength(shape1.getCenter() - shape2.getCenter()) 
+        <= sqr(shape1.getRadius() + shape2.getRadius());
 }
 
 
-bool collides(const BasicHitboxRef<IPolygon> &lhs, 
-                const BasicHitboxRef<Circle> &rhs)
+bool collides(const BasicHitboxRef<IPolygon> &poly, 
+                const BasicHitboxRef<Circle> &cir)
 {
-    if (!intersects(lhs.getBoundingBox(), rhs.getBoundingBox())) 
+    if (!intersects(poly.getBoundingBox(), cir.getBoundingBox())) 
       return false;
-    auto &&l_shape = lhs.getShape();
-    auto &&r_shape = rhs.getShape();
-    for (auto edge : l_shape.edges())
-      if (intersects(edge, rhs)) return true;
-    return contains(rhs, l_shape.getVertex(0)) 
-        || contains(lhs, r_shape.getCenter());
+    auto &&pshape = poly.getShape();
+    auto &&cshape = cir.getShape();
+    for (auto edge : getEdges(pshape))
+      if (intersects(edge, cir)) return true;
+    return contains(cir, pshape.getVertex(0)) 
+        || contains(poly, cshape.getCenter());
 }
-bool collides(const BasicHitboxRef<IConvexPolygon> &lhs, 
-                const BasicHitboxRef<Circle> &rhs)
+bool collides(const BasicHitboxRef<IConvexPolygon> &poly, 
+                const BasicHitboxRef<Circle> &cir)
 {
-    if (!intersects(lhs.getBoundingBox(), rhs.getBoundingBox())) 
+    if (!intersects(poly.getBoundingBox(), cir.getBoundingBox())) 
       return false;
-    auto &&l_shape = lhs.getShape();
-    auto &&r_shape = rhs.getShape();
-    for (auto edge : l_shape.edges())
-      if (intersects(edge, rhs)) return true;
-    return contains(rhs, l_shape.getVertex(0)) 
-        || (contains(lhs, r_shape.getCenter()));
+    auto &&pshape = poly.getShape();
+    auto &&cshape = cir.getShape();
+    for (auto edge : getEdges(pshape))
+      if (intersects(edge, cir)) return true;
+    return contains(cir, pshape.getVertex(0)) 
+        || (contains(poly, cshape.getCenter()));
 }
 
 

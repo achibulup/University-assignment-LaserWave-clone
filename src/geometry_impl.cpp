@@ -7,7 +7,7 @@ namespace LaserWave
 float algebraicArea(const IPolygon &polygon)
 {
     float area = 0;
-    for (auto edge : move(polygon.edges()))
+    for (auto edge : getEdges(polygon))
       area += algebraicArea(edge);
     return area;
 }

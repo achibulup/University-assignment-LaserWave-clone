@@ -2,6 +2,7 @@
 #define ENEMIES_HPP_INCLUDED
 
 #include "Enemy.hpp"
+#include "Boss.hpp"
 #include <SFML/Achibulup_dependencies/SingleAllocator.hpp>
 #include <memory>
 
@@ -15,10 +16,19 @@ class Enemies
     Enemies(Enemies&&) = default;
     Enemies& operator = (Enemies&&) = default;
 
-    int getEnemyCount() const;
+    int getEnemyCount() const noexcept;
 
     Enemy& getEnemy(int index);
     const Enemy& getEnemy(int index) const;
+
+    bool haveBoss() const noexcept;
+
+    /// throws if no boss is present
+    Boss& getBoss();
+    const Boss& getBoss() const;
+    /// return nullptr if no boss is present
+    Boss* getBossPtr();
+    const Boss* getBossPtr() const; 
 
     class Iterator
     {
@@ -105,7 +115,7 @@ class Enemies
     }
     Iterator end() &
     {
-        return Iterator(*this, this->m_enemies.size());
+        return Iterator(*this, this->getEnemyCount());
     }
     ConstIterator begin() const &
     {
@@ -113,18 +123,19 @@ class Enemies
     }
     ConstIterator end() const &
     {
-        return ConstIterator(*this, this->m_enemies.size());
+        return ConstIterator(*this, this->getEnemyCount());
     }
 
     void update(sf::Time dt);
     void drawTo(sf::RenderTarget &target, sf::RenderStates = {}) const;
 
-    void addRandomEnemy(sf::Vector2f position, sf::Vector2f player_position);
     void filterDeadEnemies();
 
-  private:
     void addEnemy(Unique<Enemy> enemy);
+    void addBoss(Unique<Boss> boss);
 
+  private:
+    Unique<Boss> m_boss;
     UList<Unique<Enemy>> m_enemies;
 };
 

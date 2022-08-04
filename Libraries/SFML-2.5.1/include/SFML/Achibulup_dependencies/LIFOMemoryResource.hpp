@@ -142,6 +142,7 @@ class LIFOMemoryResource ACHIBULUP__MEMORY_RESOURCE
 
     ///thin wrappers are inlined
 #if !ACHIBULUP__have_memory_resource
+    /// return nullptr if the requested size is 0
     void* allocate(std::size_t bytes, 
                    std::size_t alignment = alignof(std::max_align_t))
     {
@@ -163,6 +164,7 @@ class LIFOMemoryResource ACHIBULUP__MEMORY_RESOURCE
     {
         this->do_deallocate(p, 0, alignof(std::max_align_t));
     }
+    /// deallocate the last allocated memory
     void deallocateLast() noexcept;
 
     void setGrowthFactor(float growth_factor) noexcept

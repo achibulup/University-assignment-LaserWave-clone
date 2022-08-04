@@ -52,6 +52,8 @@ extern const float MENU_BUTTON_Y;
 
 
 extern const sf::Color LEADERBOARD_COLOR;
+extern const float LEADERBOARD_NAME_X;
+extern const float LEADERBOARD_SCORE_X;
 
 
 extern const float TRANSITION_DURATION;
@@ -66,6 +68,7 @@ extern const sf::Color GAMECLOCK_COLOR;
 extern const Vec2 HEALTH_BAR_POSITION;
 extern const Vec2 HEALTH_BAR_UNIT_SIZE;
 extern const float HEALTH_BAR_UNIT_SPACING;
+extern const Vec2 BOSS_HEALTH_BAR_POSITION;
 
 extern const float AVERAGE_EXPLODE_PARTICLE_SIZE;
 extern const float AVERAGE_EXPLODE_RADIUS;
@@ -101,6 +104,7 @@ extern const sf::Color KICK_COLOR;
 
 extern const float INDICATOR_DISPLAY_TIME;
 
+
 extern const float ENEMY_SPAWN_INTERVAL;
 
 extern const Vec2 ENEMY_SPAWN_MARGIN;
@@ -113,6 +117,9 @@ extern const float BASIC_ENEMY_RADIUS;
 extern const float BASIC_ENEMY_SPEED;
 extern const Angle BASIC_ENEMY_MAX_ROTATION_SPEED;
 extern const Angle BASIC_ENEMY_MIN_ROTATION_SPEED;
+
+extern const sf::Color FIRST_BOSS_COLOR;
+extern const float FIRST_BOSS_SIZE;
 
 extern const sf::String PAUSE_TITLE;
 extern const int PAUSE_TITLE_FONT_SIZE;
