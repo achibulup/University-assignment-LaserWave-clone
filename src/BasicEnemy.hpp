@@ -2,7 +2,7 @@
 #define BASIC_ENEMY_HPP_INCLUDED
 
 #include "Enemy.hpp"
-#include "GameMaths.hpp"
+#include "gamemaths.hpp"
 
 namespace LaserWave
 {

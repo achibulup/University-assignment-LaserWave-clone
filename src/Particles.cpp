@@ -1,6 +1,6 @@
 #include "Particles.hpp"
 #include "constants.hpp"
-#include "GameMaths.hpp"
+#include "gamemaths.hpp"
 
 namespace LaserWave
 {

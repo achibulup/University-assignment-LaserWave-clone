@@ -2,7 +2,7 @@
 #define CONSTANTS_HPP_INCLUDED
 
 #include "commons.hpp"
-#include "GameMaths.hpp"
+#include "gamemaths.hpp"
 #include <SFML/Graphics.hpp>
 
 namespace LaserWave

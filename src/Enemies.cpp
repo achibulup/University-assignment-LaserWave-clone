@@ -1,6 +1,6 @@
 #include "Enemies.hpp"
 #include "constants.hpp"
-#include "GameMaths.hpp"
+#include "gamemaths.hpp"
 #include "randoms.hpp"
 
 #include <algorithm>

@@ -2,7 +2,7 @@
 #define LASERBEAM_HPP_INCLUDED
 
 #include "Particle.hpp"
-#include "GameMaths.hpp"
+#include "gamemaths.hpp"
 #include "constants.hpp"
 
 namespace LaserWave

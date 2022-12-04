@@ -1,5 +1,5 @@
 #include "BasicEnemy.hpp"
-#include "GameMaths.hpp"
+#include "gamemaths.hpp"
 #include "constants.hpp"
 #include "randoms.hpp"
 #include "draw.hpp"

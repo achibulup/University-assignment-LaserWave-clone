@@ -1,6 +1,6 @@
 #include <cmath>
 #include "Player.hpp"
-#include "GameMaths.hpp"
+#include "gamemaths.hpp"
 #include "randoms.hpp"
 #include "draw.hpp"
 

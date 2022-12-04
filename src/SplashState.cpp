@@ -1,7 +1,7 @@
 #include "State.hpp"
 #include "constants.hpp"
 #include "assets.hpp"
-#include "GameMaths.hpp"
+#include "gamemaths.hpp"
 #include "randoms.hpp"
 #include "stateRequests.hpp"
 #include "SimpleGUI.hpp"

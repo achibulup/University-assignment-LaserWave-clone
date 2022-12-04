@@ -5,7 +5,7 @@
 #include "HealthBar.hpp"
 #include "Particles.hpp"
 #include "ActionIndicator.hpp"
-#include "GameMaths.hpp"
+#include "gamemaths.hpp"
 #include "assets.hpp"
 
 #include "stateRequests.hpp"
