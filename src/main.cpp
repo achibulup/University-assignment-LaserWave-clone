@@ -8,7 +8,7 @@ with the -std=c++17 compiler options.
 #include "Game.hpp"
 
 bool show_hitbox = false;
-std::ofstream log_file("data\\log.txt");
+std::ofstream log_file("data/log.txt");
 int main(int argc, const char* argv[])
 {
     for (int i = 0; i < argc; ++i) {
